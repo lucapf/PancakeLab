@@ -8,10 +8,24 @@ public class Order {
     private final int building;
     private final int room;
 
-    public Order(int building, int room) {
+    private Order(UUID id, int building, int room) {
+        this.id = id;
+        this.building = building;
+        this.room = room;
+    }
+
+    Order(int building, int room) {
         this.id = UUID.randomUUID();
         this.building = building;
         this.room = room;
+    }
+
+    static Order cloneOrder(Order o) {
+        return new Order(o.getId(), o.getBuilding(), o.getRoom());
+    }
+
+    public static Order of(int building, int room) {
+        return new Order(building, room);
     }
 
     public UUID getId() {
