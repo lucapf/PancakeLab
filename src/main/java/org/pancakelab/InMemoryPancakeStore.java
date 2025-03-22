@@ -20,10 +20,10 @@ public final class InMemoryPancakeStore implements PancakeStore {
      * delivered: customer got the order
      */
 
-    private final HashMap<UUID, OrderWithPancakes> incompleteOrders = new HashMap<>();
-    private final HashMap<UUID, OrderWithPancakes> completedOrders = new HashMap<>();
-    private final HashMap<UUID, OrderWithPancakes> preparedOrders = new HashMap<>();
-    private final HashMap<UUID, OrderWithPancakes> deliveredOrders = new HashMap<>();
+    private static final Map<UUID, OrderWithPancakes> incompleteOrders = new HashMap<>();
+    private static final Map<UUID, OrderWithPancakes> completedOrders = new HashMap<>();
+    private static final Map<UUID, OrderWithPancakes> preparedOrders = new HashMap<>();
+    private static final Map<UUID, OrderWithPancakes> deliveredOrders = new HashMap<>();
 
 
     @Override
@@ -49,7 +49,7 @@ public final class InMemoryPancakeStore implements PancakeStore {
      * @param count:          items to remove
      */
     @Override
-    public Optional<OrderWithPancakes> addPancakeToExistingOrder(UUID orderId, PancakesRecipe pancakesRecipe, int count) {
+    public Optional<OrderWithPancakes> addPancake(UUID orderId, PancakesRecipe pancakesRecipe, int count) {
         var existingOrder = findOrder(orderId);
         if (existingOrder.isEmpty()) return Optional.empty();
         var additionalPancakes =
@@ -63,14 +63,16 @@ public final class InMemoryPancakeStore implements PancakeStore {
     public List<String> viewOrder(UUID uuid) {
         return findOrder(uuid).stream()
                 .map(OrderWithPancakes::getPancakes).flatMap(Collection::stream)
-                .map(PancakesRecipe::ingredients).flatMap(Collection::stream)
+                .map(PancakesRecipe::name)
                 .toList();
     }
 
     @Override
-    public OrderWithPancakes removePancakeToExistingOrder(OrderWithPancakes orderWithPancakes,
-                                                          PancakesRecipe pancakesRecipe, int count) {
-        return Utils.removeItem(orderWithPancakes, pancakesRecipe, count);
+    public OrderWithPancakes removePancake(OrderWithPancakes orderWithPancakes,
+                                           PancakesRecipe pancakesRecipe, int count) {
+        var o = Utils.removeItem(orderWithPancakes, pancakesRecipe, count);
+        incompleteOrders.put(o.getOrderId(),o);
+        return o;
 
     }
 
@@ -111,7 +113,10 @@ public final class InMemoryPancakeStore implements PancakeStore {
     @Override
     public Optional<OrderWithPancakes> deliverOrder(UUID orderId) {
         var o = Utils.searchForOrder(orderId, preparedOrders);
-        o.ifPresent(oo -> preparedOrders.remove(orderId));
+        o.ifPresent(oo -> {
+            preparedOrders.remove(orderId);
+            deliveredOrders.put(orderId,oo);
+        });
         return o;
     }
 }

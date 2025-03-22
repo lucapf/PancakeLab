@@ -18,11 +18,11 @@ public interface PancakeStore {
 
     Optional<OrderWithPancakes> findOrder(UUID orderId);
 
-    Optional<OrderWithPancakes> addPancakeToExistingOrder(UUID orderId, PancakesRecipe pancakesRecipe, int count);
+    Optional<OrderWithPancakes> addPancake(UUID orderId, PancakesRecipe pancakesRecipe, int count);
 
     List<String> viewOrder(UUID uuid);
 
-    OrderWithPancakes removePancakeToExistingOrder(
+    OrderWithPancakes removePancake(
             OrderWithPancakes orderWithPancakes, PancakesRecipe pancakesRecipe, int count);
 
     Optional<OrderWithPancakes> cancelOrder(UUID orderId);
