@@ -5,20 +5,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.pancakelab.model.Order;
-import static org.pancakelab.model.PancakesRecipe.*;
+import org.pancakelab.model.Pancake;
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.pancakelab.model.Ingredient.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PancakeServiceTest {
-    private final static String DARK_CHOCOLATE_PANCAKE_DESCRIPTION = DARK_CHOCOLATE.name();
-    private final static String MILK_CHOCOLATE_PANCAKE_DESCRIPTION = MILK_CHOCOLATE.name();
-    private final static String MILK_CHOCOLATE_HAZELNUTS_PANCAKE_DESCRIPTION = MILK_CHOCOLATE_HAZELNUTS.name();
+    private final static String DARK_CHOCOLATE_PANCAKE_DESCRIPTION = "DARK_CHOCOLATE";
+    private final static String MILK_CHOCOLATE_PANCAKE_DESCRIPTION = "MILK_CHOCOLATE";
+    private final static String MILK_CHOCOLATE_HAZELNUTS_PANCAKE_DESCRIPTION = "MILK_CHOCOLATE_HAZELNUTS";
     PancakeService pancakeService = PancakeService.INSTANCE;
     Order order;
 
@@ -28,8 +29,9 @@ public class PancakeServiceTest {
         // setup
 
         // exercise
-        order = pancakeService.createOrder(10, 20);
-
+        var optionalOrder = pancakeService.createOrder(10, 20);
+        assertTrue(optionalOrder.isPresent());
+        order = optionalOrder.get();
         assertEquals(10, order.getBuilding());
         assertEquals(20, order.getRoom());
 
@@ -44,9 +46,9 @@ public class PancakeServiceTest {
         // setup
 
         // exercise
-        pancakeService.addDarkChocolatePancake(order.getId(), 3);
-        pancakeService.addMilkChocolatePancake(order.getId(), 3);
-        pancakeService.addMilkChocolateHazelnutsPancake(order.getId(), 3);
+        pancakeService.addPancakes(order.getId(), 3, DARK_CHOCOLATE);
+        pancakeService.addPancakes(order.getId(), 3, MILK_CHOCOLATE);
+        pancakeService.addPancakes(order.getId(), 3, MILK_CHOCOLATE, HAZELNUTS);
 
         // verify
         List<String> ordersPancakes = pancakeService.viewOrder(order.getId());
@@ -67,11 +69,14 @@ public class PancakeServiceTest {
     @org.junit.jupiter.api.Order(30)
     public void GivenPancakesExists_WhenRemovingPancakes_ThenCorrectNumberOfPancakesRemoved_Test() {
         // setup
+        var darkChocolatePancake = new Pancake.Builder(DARK_CHOCOLATE).build();
+        var milkChocolatePancake = new Pancake.Builder(MILK_CHOCOLATE).build();
+        var milkChocolateHazelnutsPancake = new Pancake.Builder(MILK_CHOCOLATE, HAZELNUTS).build();
 
         // exercise
-        pancakeService.removePancakes(DARK_CHOCOLATE, order.getId(), 2);
-        pancakeService.removePancakes(MILK_CHOCOLATE, order.getId(), 3);
-        pancakeService.removePancakes(MILK_CHOCOLATE_HAZELNUTS, order.getId(), 1);
+        pancakeService.removePancakes(darkChocolatePancake, order.getId(), 2);
+        pancakeService.removePancakes(milkChocolatePancake, order.getId(), 3);
+        pancakeService.removePancakes(milkChocolateHazelnutsPancake, order.getId(), 1);
 
         // verify
         List<String> ordersPancakes = pancakeService.viewOrder(order.getId());
@@ -92,7 +97,7 @@ public class PancakeServiceTest {
         pancakeService.completeOrder(order.getId());
 
         // verify
-        Set<UUID> completedOrdersOrders = pancakeService.listCompletedOrders();
+        List<UUID> completedOrdersOrders = pancakeService.listCompletedOrders();
         assertTrue(completedOrdersOrders.contains(order.getId()));
 
         // tear down
@@ -107,10 +112,10 @@ public class PancakeServiceTest {
         pancakeService.prepareOrder(order.getId());
 
         // verify
-        Set<UUID> completedOrders = pancakeService.listCompletedOrders();
+        List<UUID> completedOrders = pancakeService.listCompletedOrders();
         assertFalse(completedOrders.contains(order.getId()));
 
-        Set<UUID> preparedOrders = pancakeService.listPreparedOrders();
+        List<UUID> preparedOrders = pancakeService.listPreparedOrders();
         assertTrue(preparedOrders.contains(order.getId()));
 
         // tear down
@@ -126,10 +131,10 @@ public class PancakeServiceTest {
         var deliveredOrder = pancakeService.deliverOrder(order.getId());
 
         // verify
-        Set<UUID> completedOrders = pancakeService.listCompletedOrders();
+        List<UUID> completedOrders = pancakeService.listCompletedOrders();
         assertFalse(completedOrders.contains(order.getId()));
 
-        Set<UUID> preparedOrders = pancakeService.listPreparedOrders();
+        List<UUID> preparedOrders = pancakeService.listPreparedOrders();
         assertFalse(preparedOrders.contains(order.getId()));
 
         List<String> ordersPancakes = pancakeService.viewOrder(order.getId());
@@ -138,8 +143,9 @@ public class PancakeServiceTest {
         assertEquals(List.of(DARK_CHOCOLATE_PANCAKE_DESCRIPTION,
                 MILK_CHOCOLATE_HAZELNUTS_PANCAKE_DESCRIPTION,
                 MILK_CHOCOLATE_HAZELNUTS_PANCAKE_DESCRIPTION), ordersPancakes);
-        assertEquals(order.getId(), deliveredOrder.get().getOrder().getId());
-        assertEquals(pancakesToDeliver, deliveredOrder.get().getPancakesNames());
+        assertEquals(order.getId(), deliveredOrder.get().getId());
+        var pancakeNames = deliveredOrder.get().getPancakes().stream().map(Pancake::getName).toList();
+        assertEquals(pancakesToDeliver,pancakeNames );
 
         // tear down
         order = null;
@@ -149,18 +155,22 @@ public class PancakeServiceTest {
     @org.junit.jupiter.api.Order(70)
     public void GivenOrderExists_WhenCancellingOrder_ThenOrderAndPancakesRemoved_Test() {
         // setup
-        order = pancakeService.createOrder(10, 20);
-        pancakeService.addDarkChocolatePancake(order.getId(),2);
-        pancakeService.addDarkChocolateWhippedCreamHazelnutsPancake(order.getId(),2);
+        var newOrder = pancakeService.createOrder(10, 20);
+        assertTrue(newOrder.isPresent());
+        order = newOrder.get();
+        pancakeService.addPancakes(order.getId(), 2, DARK_CHOCOLATE);
+        pancakeService.addPancakes(order.getId(), 2, DARK_CHOCOLATE, WHIPPED_CREAM, HAZELNUTS);
+//        pancakeService.addDarkChocolatePancake(order.getId(), 2);
+//        pancakeService.addDarkChocolateWhippedCreamHazelnutsPancake(order.getId(), 2);
 
         // exercise
         pancakeService.cancelOrder(order.getId());
 
         // verify
-        Set<UUID> completedOrders = pancakeService.listCompletedOrders();
+        List<UUID> completedOrders = pancakeService.listCompletedOrders();
         assertFalse(completedOrders.contains(order.getId()));
 
-        Set<UUID> preparedOrders = pancakeService.listPreparedOrders();
+        List<UUID> preparedOrders = pancakeService.listPreparedOrders();
         assertFalse(preparedOrders.contains(order.getId()));
 
         List<String> ordersPancakes = pancakeService.viewOrder(order.getId());
@@ -169,7 +179,7 @@ public class PancakeServiceTest {
 
         // tear down
     }
-//
+
 //    private void addPancakes() {
 //        pancakeService.addDarkChocolatePancake(order.getId(), 3);
 //        pancakeService.addMilkChocolatePancake(order.getId(), 3);

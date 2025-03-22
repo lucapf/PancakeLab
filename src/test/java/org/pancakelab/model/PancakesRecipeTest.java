@@ -2,16 +2,22 @@ package org.pancakelab.model;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PancakesRecipeTest {
     @Test
     public void check_Ingredients() {
-        assertEquals(List.of("dark chocolate", "whipped cream", "hazelnuts"),
-                PancakesRecipe.DARK_CHOCOLATE_WHIPPED_CREAM_HAZELNUT.ingredients());
-        assertEquals(List.of("milk chocolate", "hazelnuts"), PancakesRecipe.MILK_CHOCOLATE_HAZELNUTS.ingredients());
-    }
+        var darkChocolateHazelnuts = new Pancake
+                .Builder(Ingredient.DARK_CHOCOLATE, Ingredient.HAZELNUTS, Ingredient.WHIPPED_CREAM).build();
+        assertEquals("DARK_CHOCOLATE_WHIPPED_CREAM_HAZELNUTS", darkChocolateHazelnuts.getName());
 
+        var darkChocolate = new Pancake.Builder(Ingredient.DARK_CHOCOLATE).build();
+        assertEquals("DARK_CHOCOLATE", darkChocolate.getName());
+
+        var duplicatedIngredients = new Pancake
+                .Builder(Ingredient.HAZELNUTS, Ingredient.HAZELNUTS).build();
+        assertEquals("HAZELNUTS", duplicatedIngredients.getName());
+        var plainPancake = new Pancake.Builder().build();
+        assertEquals("PLAIN", plainPancake.getName());
+    }
 }
