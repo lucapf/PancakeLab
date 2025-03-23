@@ -70,7 +70,7 @@ final class InMemoryPancakeStore implements PancakeStore {
     @Override
     public Order moveOrder(UUID orderId, OrderStatus currentOrderStatus, OrderStatus newOrderStatus) {
         var existingOrder = findOrderByIdAndStatus(orderId, currentOrderStatus);
-        var newOrder = new Order.Builder(existingOrder).setStep(newOrderStatus).build();
+        var newOrder = new Order.Builder(existingOrder).setStatus(newOrderStatus).build();
         putValue(newOrder);
         return newOrder;
     }

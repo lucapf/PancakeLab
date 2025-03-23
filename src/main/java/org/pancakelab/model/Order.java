@@ -71,7 +71,7 @@ public interface Order {
             return this;
         }
 
-        public Builder setStep(OrderStatus orderStatus) {
+        public Builder setStatus(OrderStatus orderStatus) {
             this.orderStatus = orderStatus;
             return this;
         }
