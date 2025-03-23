@@ -9,11 +9,13 @@ class PancakeService {
 PancakeService --* PancakeStore: use
 interface PancakeStore{
   + Order createOrder(int building, int room);
-  + Order addPancakes(UUID orderId, List<Pancake> pancakesRecipe);
+  + Order findOrderById(UUID orderId);
+  + Order findOrderByIdAndStatus(UUID orderId, OrderStatus orderStatus);
+  + List<Order> findOrdersByStatus(OrderStatus orderStatus);
+  + Order addPancakes(Order order, List<Pancake> pancakesRecipe);
   + Order removePancakes(Order order, List<Pancake> pancakesRecipe);
-  + Order deleteOrder(UUID orderId);
-  + List<Order> findOrdersByStep(Step step);
-  + Order moveOrder(UUID orderId, Step currentStep, Step nextStep);
+  + void deleteOrder(Order order );
+  + Order moveOrder(Order existingOrder, OrderStatus nextOrderStatus);
 }
 class InMemoryPancakeStore{}
 

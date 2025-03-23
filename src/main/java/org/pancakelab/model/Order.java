@@ -22,30 +22,22 @@ public interface Order {
     String getDescription();
 
     class Builder {
-        enum Type {NULL, CONCRETE}
-        UUID id;
         final int building;
         final int room;
+        UUID id;
         OrderStatus orderStatus;
         List<Pancake> pancakes;
         String description;
         Type type;
-
-        public static Order buildInvalid(String description) {
-            return new NullOrder(description);
-        }
-
         public Builder(Order order) {
             this(order.getBuilding(), order.getRoom());
             this.id = order.getId();
-            this.type = order instanceof  NullOrder?Type.NULL:Type.CONCRETE;
+            this.type = order instanceof NullOrder ? Type.NULL : Type.CONCRETE;
             this.orderStatus = order.getStatus();
             this.pancakes = order.getPancakes();
             this.description = order.getDescription();
         }
-        private void checkAddress(int building, int room ){
-            this.type = building > 0 && room > 0?Type.CONCRETE:Type.NULL;
-        }
+
         public Builder(int building, int room) {
             checkAddress(building, room);
             this.id = UUID.randomUUID();
@@ -54,8 +46,16 @@ public interface Order {
             this.pancakes = Collections.emptyList();
             this.orderStatus = OrderStatus.INCOMPLETE;
             this.description = Type.CONCRETE == this.type
-                    ?"building: %d room: %d".formatted(this.building, this.room)
-                    :"the address building: %d room: %d is not valid".formatted(this.building, this.room);
+                    ? "building: %d room: %d".formatted(this.building, this.room)
+                    : "the address building: %d room: %d is not valid".formatted(this.building, this.room);
+        }
+
+        public static Order buildNull(String description) {
+            return new NullOrder(description);
+        }
+
+        private void checkAddress(int building, int room) {
+            this.type = building > 0 && room > 0 ? Type.CONCRETE : Type.NULL;
         }
 
         public Builder setStatus(OrderStatus orderStatus) {
@@ -70,8 +70,10 @@ public interface Order {
 
         public Order build() {
             return this.type == Type.CONCRETE
-                    ?new ConcreteOrder(this)
-                    :new  NullOrder(this.description);
+                    ? new ConcreteOrder(this)
+                    : new NullOrder(this.description);
         }
+
+        enum Type {NULL, CONCRETE}
     }
 }

@@ -9,8 +9,9 @@ public class NullOrder implements Order {
     NullOrder(String description) {
         this.description = description;
     }
-    public static UUID getNullID(){
-       return UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+    public static UUID getNullID() {
+        return UUID.fromString("00000000-0000-0000-0000-000000000000");
     }
 
     @Override

@@ -1,9 +1,6 @@
 package org.pancakelab.service;
 
-import org.pancakelab.model.Ingredient;
-import org.pancakelab.model.Order;
-import org.pancakelab.model.OrderStatus;
-import org.pancakelab.model.Pancake;
+import org.pancakelab.model.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,10 +27,9 @@ public enum PancakeService {
 
     public synchronized void addPancakes(UUID orderId, int count, Ingredient... ingredients) {
         var pancake = new Pancake.Builder(ingredients).build();
-        var additionalPancakes =
-                IntStream.range(0, count).boxed().map(x -> pancake).toList();
-
-        var order = pancakeStore.addPancakes(orderId,OrderStatus.INCOMPLETE , additionalPancakes);
+        var additionalPancakes = IntStream.range(0, count).boxed().map(x -> pancake).toList();
+        var existingOrder = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.INCOMPLETE);
+        var order = pancakeStore.addPancakes(existingOrder, additionalPancakes);
         OrderLog.logAddPancake(order, pancake);
     }
 
@@ -44,16 +40,16 @@ public enum PancakeService {
     }
 
     public synchronized void removePancakes(Pancake pancake, UUID orderId, int count) {
+        var pancakesToRemove = IntStream.range(0, count).boxed().map(x -> pancake).toList();
         var existingOrder = pancakeStore.findOrderById(orderId);
-        var pancakesToRemove =
-                IntStream.range(0, count).boxed().map(x -> pancake).toList();
         var newOrder = pancakeStore.removePancakes(existingOrder, pancakesToRemove);
         var removedItems = existingOrder.getPancakes().size() - newOrder.getPancakes().size();
         OrderLog.logRemovePancakes(newOrder, pancake.description(), removedItems);
     }
 
     public synchronized Order cancelOrder(UUID orderId) {
-        var order = pancakeStore.deleteOrder(orderId, OrderStatus.INCOMPLETE);
+        var order = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.INCOMPLETE);
+        pancakeStore.deleteOrder(order);
         OrderLog.logCancelOrder(order);
         return order;
     }
@@ -71,24 +67,24 @@ public enum PancakeService {
     }
 
     public synchronized Order deliverOrder(UUID orderId) {
-        var order = pancakeStore.findOrderById(orderId);
-        var orderWithPancakes = order.getStatus() == OrderStatus.PREPARED
-                ?pancakeStore.deleteOrder(orderId, OrderStatus.PREPARED)
-                :Order.Builder.buildInvalid("order id: %s status %s not found");
-        OrderLog.logDeliverOrder(orderWithPancakes);
-        return orderWithPancakes;
+        var order = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.PREPARED);
+        pancakeStore.deleteOrder(order);
+        OrderLog.logDeliverOrder(order);
+        return order;
     }
+
     public synchronized Order completeOrder(UUID orderId) {
-        var order = pancakeStore.findOrderById(orderId);
-        if (order.getPancakes().isEmpty())
-            return Order.Builder.buildInvalid("cannot complete orders without pancakes!");
-        var movedOrder = pancakeStore.moveOrder(orderId, OrderStatus.INCOMPLETE, OrderStatus.COMPLETED);
+        var order = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.INCOMPLETE);
+        var movedOrder = order instanceof ConcreteOrder && order.getPancakes().isEmpty()
+                ? Order.Builder.buildNull("cannot complete orders without pancakes!")
+                : pancakeStore.moveOrder(order, OrderStatus.COMPLETED);
         OrderLog.logNextStep(movedOrder);
         return movedOrder;
     }
 
     public synchronized Order prepareOrder(UUID orderId) {
-        var movedOrder = pancakeStore.moveOrder(orderId, OrderStatus.COMPLETED, OrderStatus.PREPARED);
+        var order = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.COMPLETED);
+        var movedOrder = pancakeStore.moveOrder(order, OrderStatus.PREPARED);
         OrderLog.logNextStep(movedOrder);
         return movedOrder;
     }

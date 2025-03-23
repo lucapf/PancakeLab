@@ -1,6 +1,9 @@
 package org.pancakelab.service;
 
-import org.pancakelab.model.*;
+import org.pancakelab.model.ConcreteOrder;
+import org.pancakelab.model.Order;
+import org.pancakelab.model.OrderStatus;
+import org.pancakelab.model.Pancake;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,13 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 final class InMemoryPancakeStore implements PancakeStore {
 
-      private static final Map<UUID, Order> orders = new ConcurrentHashMap<>();
+    private static final Map<UUID, Order> orders = new ConcurrentHashMap<>();
 
 
     @Override
     public Order createOrder(int building, int room) {
         var createdOrder = new ConcreteOrder.Builder(building, room).build();
-        putValue( createdOrder);
+        putValue(createdOrder);
         return createdOrder;
     }
 
@@ -26,19 +29,26 @@ final class InMemoryPancakeStore implements PancakeStore {
         var o = Optional.ofNullable(orders.get(
                 Objects.requireNonNullElse(orderId, UUID.randomUUID())
         ));
-        return o.orElseGet(() -> Order.Builder.buildInvalid("order with id: %s does not exists".formatted(orderId)));
+        return o.orElseGet(() -> Order.Builder.buildNull("order with id: %s does not exists".formatted(orderId)));
+    }
+
+    @Override
+    public Order findOrderByIdAndStatus(UUID orderId, OrderStatus orderStatus) {
+        var order = findOrderById(orderId);
+        return order.getStatus() == orderStatus
+                ? order
+                : Order.Builder.buildNull("order id: %s with status: %s not found".formatted(orderId, orderStatus));
     }
 
     /**
      * add new pancakes to an existing order.
      * Only incomplete order are modifiable!
      *
-     * @param orderId   : the order id
-     * @param pancakes: list of pancake to add
+     * @param existingOrder: the order we are going to update
+     * @param pancakes:      list of pancake to add
      */
     @Override
-    public Order addPancakes(UUID orderId,OrderStatus orderStatus , List<Pancake> pancakes) {
-        var existingOrder = findOrderByIdAndStatus(orderId, orderStatus);
+    public Order addPancakes(Order existingOrder, List<Pancake> pancakes) {
         var updatedOrder = existingOrder.addPancakes(pancakes);
         putValue(updatedOrder);
         return existingOrder;
@@ -53,10 +63,8 @@ final class InMemoryPancakeStore implements PancakeStore {
     }
 
     @Override
-    public Order deleteOrder(UUID orderId, OrderStatus status) {
-        var order = findOrderByIdAndStatus(orderId, status);
-        orders.remove(orderId);
-        return order;
+    public void deleteOrder(Order order) {
+        orders.remove(order.getId());
     }
 
 
@@ -66,8 +74,7 @@ final class InMemoryPancakeStore implements PancakeStore {
     }
 
     @Override
-    public Order moveOrder(UUID orderId, OrderStatus currentOrderStatus, OrderStatus newOrderStatus) {
-        var existingOrder = findOrderByIdAndStatus(orderId, currentOrderStatus);
+    public Order moveOrder(Order existingOrder, OrderStatus newOrderStatus) {
         var newOrder = new Order.Builder(existingOrder).setStatus(newOrderStatus).build();
         putValue(newOrder);
         return newOrder;
@@ -76,15 +83,9 @@ final class InMemoryPancakeStore implements PancakeStore {
     /**
      * store concrete orders only
      */
-    private void putValue(Order order){
-        if (order instanceof  ConcreteOrder)
-                orders.put(order.getId(), order);
+    private void putValue(Order order) {
+        if (order instanceof ConcreteOrder)
+            orders.put(order.getId(), order);
     }
-   private Order findOrderByIdAndStatus(UUID orderId, OrderStatus orderStatus) {
-       var order = findOrderById(orderId);
-       return order.getStatus() == orderStatus
-               ?order
-               : Order.Builder.buildInvalid(
-                   "order id: %s with status: %s not found".formatted(orderId, orderStatus));
-   }
+
 }

@@ -1,7 +1,6 @@
 package org.pancakelab.model;
 
 public enum Ingredient {
-    PLAIN("no toppings", 0),
     DARK_CHOCOLATE("dark chocolate", 1),
     MILK_CHOCOLATE("milk chocolate", 2),
     WHIPPED_CREAM("whipped cream", 3),

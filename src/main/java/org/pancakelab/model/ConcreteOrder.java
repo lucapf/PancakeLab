@@ -60,15 +60,15 @@ public class ConcreteOrder implements Order {
     @Override
     public Order removePancakes(List<Pancake> pancakes) {
         var existingPancakes = new ArrayList<>(this.pancakes);
-        pancakes.forEach( existingPancakes::remove);
-        return  new Order.Builder(this).setListPancakes(existingPancakes).build();
+        pancakes.forEach(existingPancakes::remove);
+        return new Order.Builder(this).setListPancakes(existingPancakes).build();
     }
 
     @Override
     public String getDescription() {
         return description;
     }
-     
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

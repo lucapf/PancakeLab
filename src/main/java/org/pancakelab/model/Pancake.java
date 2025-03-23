@@ -43,19 +43,19 @@ public class Pancake {
         private List<Ingredient> ingredients;
         private String name;
 
-        private List<Ingredient> removeDuplicatedAndSortIngredients(){
-            return new HashSet<>(ingredients).stream()
-                    .sorted(Comparator.comparingInt(Ingredient::index)).toList(); //use Set to remove duplicates
-        }
-
         public Builder(Ingredient... providedIngredients) {
             this.ingredients = List.of(providedIngredients);
         }
 
+        private List<Ingredient> removeDuplicatedAndSortIngredients() {
+            return new HashSet<>(ingredients).stream()
+                    .sorted(Comparator.comparingInt(Ingredient::index)).toList(); //use Set to remove duplicates
+        }
+
         public Pancake build() {
-            ingredients = ingredients.isEmpty() ? List.of(Ingredient.PLAIN) : ingredients;
+            ingredients = ingredients.isEmpty() ? List.of(Ingredient.WHIPPED_CREAM) : ingredients;
             ingredients = removeDuplicatedAndSortIngredients();
-            name  = ingredients.stream().map(Ingredient::name).collect(Collectors.joining("_"));
+            name = ingredients.stream().map(Ingredient::name).collect(Collectors.joining("_"));
             return new Pancake(this);
         }
     }

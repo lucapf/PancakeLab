@@ -9,7 +9,7 @@ Major changes:
 - Customers are now able to choose the ingredients they want among the ones our Sensei approve! our new system will
   - remove duplicates, if you specify Hazelnuts, Hazelnuts, Hazelnuts means you want a pancake with Hazelnuts 
   - sort the ingredients following our Sensei's recommendation
-  - if customer did not choose any ingredient, a PLAIN pancake will be served
+  - at least one topping is required
 - the persistence management (PancakeStore) has been decoupled by the business logic so,
   when our Dojo will be world-wide, we will be able to replace the InMemory management with a database or our choice
 - the InMemory store has been replaced with a Map to find quicker orders by key

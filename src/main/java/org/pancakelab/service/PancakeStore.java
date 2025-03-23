@@ -16,13 +16,15 @@ interface PancakeStore {
 
     Order findOrderById(UUID orderId);
 
-    Order addPancakes(UUID orderId,OrderStatus orderStatus , List<Pancake> pancakesRecipe);
+    Order findOrderByIdAndStatus(UUID orderId, OrderStatus orderStatus);
+
+    Order addPancakes(Order order, List<Pancake> pancakesRecipe);
 
     Order removePancakes(Order order, List<Pancake> pancakesRecipe);
 
-    Order deleteOrder(UUID orderId, OrderStatus orderStatus);
+    void deleteOrder(Order order);
 
     List<Order> findOrdersByStatus(OrderStatus orderStatus);
 
-    Order moveOrder(UUID orderId, OrderStatus currentOrderStatus, OrderStatus nextOrderStatus);
+    Order moveOrder(Order existingOrder, OrderStatus nextOrderStatus);
 }
