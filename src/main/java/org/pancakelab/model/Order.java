@@ -1,86 +1,66 @@
 package org.pancakelab.model;
 
-import org.pancakelab.service.Utils;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
-import java.util.*;
+public interface Order {
+    List<Pancake> getPancakes();
 
-public class Order {
-    private final UUID id;
-    private final int building;
-    private final int room;
-    private final List<Pancake> pancakes;
-    private final Step step;
+    UUID getId();
 
-    private Order(Order.Builder builder) {
-        this.id = builder.id;
-        this.building = builder.building;
-        this.room = builder.room;
-        this.pancakes = builder.pancakes;
-        this.step = builder.step;
-    }
+    int getBuilding();
 
-    public List<Pancake> getPancakes() {
-        return this.pancakes;
-    }
+    int getRoom();
 
+    Step getStep();
 
-    public UUID getId() {
-        return id;
-    }
+    Order addPancakes(List<Pancake> pancakes);
 
-    public int getBuilding() {
-        return building;
-    }
+    String getDescription();
 
-    public int getRoom() {
-        return room;
-    }
+    Type getType();
 
-    public Step getStep() {
-        return step;
-    }
+    enum Type {CONCRETE, INVALID}
 
-    public Order addPancakes(List<Pancake> pancakes) {
-        var o = new Order.Builder(this)
-                .setListPancakes(Utils.concat(this.pancakes, pancakes)).build();
-        assert o.isPresent(); //cannot be false because was already there
-        return o.get();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Order order = (Order) o;
-        return Objects.equals(id, order.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    public static class Builder {
+    class Builder {
         UUID id;
         int building;
         int room;
         Step step;
         List<Pancake> pancakes;
+        String description;
+        Type type;
 
-        public Builder(Order order) {
-            this.id = order.getId();
-            this.room = order.getRoom();
-            this.building = order.getBuilding();
-            this.step = order.step;
-            this.pancakes = order.pancakes;
+        public Builder() {
+            this(0, 0);
         }
 
+        public Builder(Order order) {
+            this(order.getBuilding(), order.getRoom());
+            this.id = order.getId();
+            this.building = order.getBuilding();
+            this.step = order.getStep();
+            this.pancakes = order.getPancakes();
+        }
+        private Type checkAddress(int building, int room){
+           return building <= 0 || room<=0?Type.INVALID:Type.CONCRETE;
+        }
         public Builder(int building, int room) {
+            this.type = checkAddress(building, room);
             this.id = UUID.randomUUID();
             this.building = building;
             this.room = room;
             this.pancakes = Collections.emptyList();
             this.step = Step.INCOMPLETE;
+            this.description = type == Type.CONCRETE
+                                ?"building: %d room: %d".formatted(this.building, this.room)
+                                :"the address is not invalid";
+        }
+
+        public Builder setDescription(String description) {
+            this.description = description;
+            return this;
         }
 
         public Builder setStep(Step step) {
@@ -93,8 +73,10 @@ public class Order {
             return this;
         }
 
-        public Optional<Order> build() {
-            return this.building < 0 || this.room < 0 ? Optional.empty() : Optional.of(new Order(this));
+        public Order build() {
+            return this.building < 0 || this.room < 0
+                    ? new NullOrder("the address is not valid")
+                    : new ConcreteOrder(this);
         }
     }
 }

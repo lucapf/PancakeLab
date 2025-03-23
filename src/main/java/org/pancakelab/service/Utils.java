@@ -1,5 +1,6 @@
 package org.pancakelab.service;
 
+import org.pancakelab.model.ConcreteOrder;
 import org.pancakelab.model.Ingredient;
 import org.pancakelab.model.Order;
 import org.pancakelab.model.Pancake;
@@ -18,9 +19,7 @@ public class Utils {
         for (int i = 0; i < count; i++) {
             listPancakes.remove(pancake);
         }
-        var newOrder = new Order.Builder(o).setListPancakes(listPancakes).build();
-        assert newOrder.isPresent();
-        return newOrder.get();
+        return new ConcreteOrder.Builder(o).setListPancakes(listPancakes).build();
     }
 
     public static List<Ingredient> removeDuplicatedAndSort(List<Ingredient> ingredients) {

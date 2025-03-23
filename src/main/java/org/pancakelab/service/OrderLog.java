@@ -13,6 +13,7 @@ class OrderLog {
                         order.getPancakes().size()))
                 .append("for building %d, room %d.".formatted(order.getBuilding(),
                         order.getRoom()));
+        System.out.println(log);
     }
 
     public static void logRemovePancakes(Order order, String description, int count) {
@@ -21,6 +22,7 @@ class OrderLog {
                 .append("from order %s now containing %d pancakes, ".formatted(order.getId(), order.getPancakes().size()))
                 .append("for building %d, room %d.".formatted(order.getBuilding(), order.getRoom()));
     }
+
     public static void logNextStep(Order o) {
         log.append("%s order %s with %d pancakes ".formatted(o.getStep().getDescription(), o.getId(), o.getPancakes().size()))
                 .append("for building %d, room %d.".formatted(o.getBuilding(), o.getPancakes().size()));

@@ -1,10 +1,12 @@
 package org.pancakelab.service;
 
+import org.pancakelab.model.ConcreteOrder;
 import org.pancakelab.model.Order;
 import org.pancakelab.model.Pancake;
 import org.pancakelab.model.Step;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 /**
@@ -20,21 +22,24 @@ final class InMemoryPancakeStore implements PancakeStore {
      * delivered: customer got the order
      */
 
-    private static final Map<UUID, Order> orders = new HashMap<>();
+    private static final Map<UUID, Order> orders = new ConcurrentHashMap<>();
 
 
     @Override
-    public Optional<Order> createOrder(int building, int room) {
-        var createdOrder = new Order.Builder(building, room).build();
-        createdOrder.ifPresent(order -> orders.put(order.getId(), order));
+    public Order createOrder(int building, int room) {
+        var createdOrder = new ConcreteOrder.Builder(building, room).build();
+        orders.put(createdOrder.getId(), createdOrder);
         return createdOrder;
     }
 
     @Override
-    public Optional<Order> findOrder(UUID orderId) {
-        return Optional.ofNullable(orders.get(
+    public Order findOrder(UUID orderId) {
+        var o = Optional.ofNullable(orders.get(
                 Objects.requireNonNullElse(orderId, UUID.randomUUID())
-                ));
+        ));
+        return o.orElseGet(() -> new Order.Builder()
+                .setDescription("order with id: %s does not exists".formatted(orderId))
+                .build());
     }
 
     /**
@@ -46,23 +51,15 @@ final class InMemoryPancakeStore implements PancakeStore {
      * @param count:   items to remove
      */
     @Override
-    public Optional<Order> addPancake(UUID orderId, Pancake pancake, int count) {
+    public Order addPancake(UUID orderId, Pancake pancake, int count) {
         var existingOrder = findOrder(orderId);
-        if (existingOrder.isEmpty()) return Optional.empty();
         var additionalPancakes =
                 IntStream.range(0, count).boxed().map(x -> pancake).toList();
-        var updatedOrder = existingOrder.get().addPancakes(additionalPancakes);
+        var updatedOrder = existingOrder.addPancakes(additionalPancakes);
         orders.put(orderId, updatedOrder);
         return existingOrder;
     }
 
-    @Override
-    public List<String> viewOrder(UUID uuid) {
-        return findOrder(uuid).stream()
-                .map(Order::getPancakes).flatMap(Collection::stream)
-                .map(Pancake::getName)
-                .toList();
-    }
 
     @Override
     public Order removePancake(Order order, Pancake pancake, int count) {
@@ -72,20 +69,10 @@ final class InMemoryPancakeStore implements PancakeStore {
     }
 
     @Override
-    public Optional<Order> cancelOrder(UUID orderId) {
-        var o = Optional.ofNullable(orders.get(orderId));
+    public Order cancelOrder(UUID orderId) {
+        var order = findOrder(orderId);
         orders.remove(orderId);
-        return o;
-    }
-
-    @Override
-    public Optional<Order> completeOrder(UUID orderId) {
-        return move(orderId, Step.INCOMPLETE, Step.COMPLETED);
-    }
-
-    @Override
-    public Optional<Order> preparedOrder(UUID orderId) {
-        return move(orderId, Step.COMPLETED, Step.PREPARED);
+        return order;
     }
 
 
@@ -100,24 +87,15 @@ final class InMemoryPancakeStore implements PancakeStore {
         return filterByStatus(Step.PREPARED).stream().map(Order::getId).toList();
     }
 
-    @Override
-    public Optional<Order> deliverOrder(UUID orderId) {
-        return move(orderId, Step.PREPARED, Step.DELIVERED);
-    }
 
     private List<Order> filterByStatus(Step step) {
         return orders.values().stream().filter(o -> o.getStep() == step).toList();
     }
 
-    private Optional<Order> move(UUID orderId, Step currentStep, Step newStep) {
-        var o = Optional.ofNullable(orders.get(orderId));
-        if (o.isPresent() && o.get().getStep() == currentStep) {
-            var newOptionalOrder = new Order.Builder(o.get()).setStep(newStep).build();
-            assert newOptionalOrder.isPresent();
-            var newOrder = newOptionalOrder.get();
-            orders.put(newOrder.getId(), newOrder);
-            return Optional.of(newOrder);
-        }
-        return o;
+    public Order moveOrder(UUID orderId, Step currentStep, Step newStep) {
+        var o = findOrder(orderId);
+        var newOrder = new ConcreteOrder.Builder(o).setStep(newStep).build();
+        orders.put(orderId, newOrder);
+        return newOrder;
     }
 }

@@ -8,7 +8,8 @@ public class PancakesRecipeTest {
     @Test
     public void check_Ingredients() {
         var darkChocolateHazelnuts = new Pancake
-                .Builder(Ingredient.DARK_CHOCOLATE, Ingredient.HAZELNUTS, Ingredient.WHIPPED_CREAM).build();
+                .Builder(Ingredient.HAZELNUTS, Ingredient.DARK_CHOCOLATE,
+                Ingredient.WHIPPED_CREAM, Ingredient.DARK_CHOCOLATE).build();
         assertEquals("DARK_CHOCOLATE_WHIPPED_CREAM_HAZELNUTS", darkChocolateHazelnuts.getName());
 
         var darkChocolate = new Pancake.Builder(Ingredient.DARK_CHOCOLATE).build();
@@ -17,7 +18,9 @@ public class PancakesRecipeTest {
         var duplicatedIngredients = new Pancake
                 .Builder(Ingredient.HAZELNUTS, Ingredient.HAZELNUTS).build();
         assertEquals("HAZELNUTS", duplicatedIngredients.getName());
+
         var plainPancake = new Pancake.Builder().build();
         assertEquals("PLAIN", plainPancake.getName());
+
     }
 }
