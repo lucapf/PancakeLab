@@ -4,10 +4,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.pancakelab.model.ConcreteOrder;
-import org.pancakelab.model.NullOrder;
-import org.pancakelab.model.Order;
-import org.pancakelab.model.Pancake;
+import org.pancakelab.model.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -44,7 +41,7 @@ public class PancakeServiceTest {
     public void GivenInvalidAddress_WhenCreatingOrder_ThenOrderIsEmpty_Test() {
         var invalidAddressOrder = pancakeService.createOrder(-1, 0);
         assertInstanceOf(NullOrder.class, invalidAddressOrder);
-        assertEquals("the address is not valid", invalidAddressOrder.getDescription());
+        assertEquals("the address building: -1 room: 0 is not valid", invalidAddressOrder.getDescription());
     }
 
     @Test
@@ -130,6 +127,7 @@ public class PancakeServiceTest {
         // setup
         var newOrder = pancakeService.createOrder(10, 10);
         var orderId = newOrder.getId();
+        pancakeService.addPancakes(orderId,1, MILK_CHOCOLATE );
 
         // perform
         assertTrue(pancakeService.listIncompleteOrders().contains(orderId ));
@@ -166,10 +164,32 @@ public class PancakeServiceTest {
         pancakeService.prepareOrder(orderId);
         pancakeService.addPancakes(orderId, 1, MILK_CHOCOLATE);
         assertEquals(configuredPancakes, pancakeService.viewOrder(orderId));
-
-
     }
 
+
+    @Test
+    @org.junit.jupiter.api.Order(43)
+    public void GivenACompletedOrPreparedOrder_WhenTryToCancel_ThenOrderWontChange_Test(){
+       var newOrder = pancakeService.createOrder(10, 10);
+       var orderId = newOrder.getId();
+       pancakeService.addPancakes(orderId, 2, MILK_CHOCOLATE);
+       Order completedOrder = pancakeService.completeOrder(orderId);
+       assertEquals(orderId, completedOrder.getId());
+       assertEquals(OrderStatus.COMPLETED, completedOrder.getStatus());
+       var cancelledOrder= pancakeService.cancelOrder(orderId);
+       assertInstanceOf(NullOrder.class, cancelledOrder);
+       assertEquals("order id: %s with status: INCOMPLETE not found".formatted(orderId),cancelledOrder.getDescription());
+    }
+
+    @Test
+    @org.junit.jupiter.api.Order(44)
+    public void GivenAnIncompleteOrderWithoutPancakes_WhenTryToComplete_TheOrderWontChange_Test(){
+       var newOrder = pancakeService.createOrder(10, 10);
+       var orderId = newOrder.getId();
+       var order = pancakeService.completeOrder(orderId);
+       assertInstanceOf(NullOrder.class, order);
+       assertEquals("cannot complete orders without pancakes!", order.getDescription());
+    }
     @Test
     @org.junit.jupiter.api.Order(50)
     public void GivenOrderExists_WhenPreparingOrder_ThenOrderPrepared_Test() {

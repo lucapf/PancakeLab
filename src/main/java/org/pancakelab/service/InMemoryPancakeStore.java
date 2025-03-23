@@ -26,9 +26,7 @@ final class InMemoryPancakeStore implements PancakeStore {
         var o = Optional.ofNullable(orders.get(
                 Objects.requireNonNullElse(orderId, UUID.randomUUID())
         ));
-        return o.orElseGet(() -> new Order.Builder()
-                .setDescription("order with id: %s does not exists".formatted(orderId))
-                .build());
+        return o.orElseGet(() -> Order.Builder.buildInvalid("order with id: %s does not exists".formatted(orderId)));
     }
 
     /**
@@ -55,8 +53,8 @@ final class InMemoryPancakeStore implements PancakeStore {
     }
 
     @Override
-    public Order deleteOrder(UUID orderId) {
-        var order = findOrderById(orderId);
+    public Order deleteOrder(UUID orderId, OrderStatus status) {
+        var order = findOrderByIdAndStatus(orderId, status);
         orders.remove(orderId);
         return order;
     }
@@ -83,9 +81,10 @@ final class InMemoryPancakeStore implements PancakeStore {
                 orders.put(order.getId(), order);
     }
    private Order findOrderByIdAndStatus(UUID orderId, OrderStatus orderStatus) {
-       var o = findOrderById(orderId);
-       return o.getStatus() == orderStatus?o
-               : new Order.Builder().setDescription(
-               "order id: %s with status: %s not found".formatted(orderId, orderStatus)).build();
+       var order = findOrderById(orderId);
+       return order.getStatus() == orderStatus
+               ?order
+               : Order.Builder.buildInvalid(
+                   "order id: %s with status: %s not found".formatted(orderId, orderStatus));
    }
 }

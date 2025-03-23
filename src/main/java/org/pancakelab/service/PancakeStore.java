@@ -20,7 +20,7 @@ interface PancakeStore {
 
     Order removePancakes(Order order, List<Pancake> pancakesRecipe);
 
-    Order deleteOrder(UUID orderId);
+    Order deleteOrder(UUID orderId, OrderStatus orderStatus);
 
     List<Order> findOrdersByStatus(OrderStatus orderStatus);
 

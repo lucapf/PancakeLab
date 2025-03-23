@@ -52,12 +52,11 @@ public enum PancakeService {
         OrderLog.logRemovePancakes(newOrder, pancake.description(), removedItems);
     }
 
-    public synchronized void cancelOrder(UUID orderId) {
-        var order = pancakeStore.deleteOrder(orderId);
+    public synchronized Order cancelOrder(UUID orderId) {
+        var order = pancakeStore.deleteOrder(orderId, OrderStatus.INCOMPLETE);
         OrderLog.logCancelOrder(order);
+        return order;
     }
-
-
 
     public List<UUID> listIncompleteOrders() {
         return pancakeStore.findOrdersByStatus(OrderStatus.INCOMPLETE).stream().map(Order::getId).toList();
@@ -74,12 +73,15 @@ public enum PancakeService {
     public synchronized Order deliverOrder(UUID orderId) {
         var order = pancakeStore.findOrderById(orderId);
         var orderWithPancakes = order.getStatus() == OrderStatus.PREPARED
-                ?pancakeStore.deleteOrder(orderId)
-                :new Order.Builder().setDescription("order id: %s status %s not found").build();
+                ?pancakeStore.deleteOrder(orderId, OrderStatus.PREPARED)
+                :Order.Builder.buildInvalid("order id: %s status %s not found");
         OrderLog.logDeliverOrder(orderWithPancakes);
         return orderWithPancakes;
     }
     public synchronized Order completeOrder(UUID orderId) {
+        var order = pancakeStore.findOrderById(orderId);
+        if (order.getPancakes().isEmpty())
+            return Order.Builder.buildInvalid("cannot complete orders without pancakes!");
         var movedOrder = pancakeStore.moveOrder(orderId, OrderStatus.INCOMPLETE, OrderStatus.COMPLETED);
         OrderLog.logNextStep(movedOrder);
         return movedOrder;

@@ -1,0 +1,13 @@
+@startuml
+INCOMPLETE: initial State
+INCOMPLETE: Disciple can add new pancakes
+INCOMPLETE: Disciple can cancel the order
+COMPLETED:  Disciple cannot modify / cancel the order
+PREPARED: Ready for delivery
+PREPARED: Disciple cannot modify / cancel the order
+
+[*] --> INCOMPLETE
+INCOMPLETE --> COMPLETED: complete
+COMPLETED --> PREPARED: prepared
+PREPARED --> [*]: deliver, order cancelled by the system
+@enduml

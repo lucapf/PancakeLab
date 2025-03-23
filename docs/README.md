@@ -16,7 +16,12 @@ Major changes:
 - Concurrency has been addressed in three different ways:
   - all objects are Immutable, an update will create a new instance of the modified object
   - The PancakeService is a singleton (via Enumerator pattern) and methods that are updating data are synchronized
-- our system, now, enforce the workflow our Sensei designed: 
+- our system, now, enforce the workflow our Sensei designed
+
+## The order workflow
+
+![Order workflow](OrderStatus.svg)
+
   1. INCOMPLETE: Disciple create order , required fields a valid building and room numbers (both positive)
   2. COMPLETED: once all Pancakes have been added and the Disciple set the order as completed. 
      The order goes in the chicken and cannot be changed anymore
