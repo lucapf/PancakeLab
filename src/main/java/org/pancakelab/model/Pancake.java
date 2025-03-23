@@ -41,7 +41,7 @@ public class Pancake {
 
     public static class Builder {
         private List<Ingredient> ingredients;
-        private final String name;
+        private String name;
 
         private List<Ingredient> removeDuplicatedAndSortIngredients(){
             return new HashSet<>(ingredients).stream()
@@ -50,12 +50,12 @@ public class Pancake {
 
         public Builder(Ingredient... providedIngredients) {
             this.ingredients = List.of(providedIngredients);
-            this.name = this.ingredients.stream().map(Ingredient::name).collect(Collectors.joining("_"));
         }
 
         public Pancake build() {
             ingredients = ingredients.isEmpty() ? List.of(Ingredient.PLAIN) : ingredients;
             ingredients = removeDuplicatedAndSortIngredients();
+            name  = ingredients.stream().map(Ingredient::name).collect(Collectors.joining("_"));
             return new Pancake(this);
         }
     }
