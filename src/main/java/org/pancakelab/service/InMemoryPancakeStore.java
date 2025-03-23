@@ -1,4 +1,4 @@
-package org.pancakelab;
+package org.pancakelab.service;
 
 import org.pancakelab.model.Order;
 import org.pancakelab.model.Pancake;
@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
  * Store the order status in memory.
  * not designed to be extended.
  */
-public final class InMemoryPancakeStore implements PancakeStore {
+final class InMemoryPancakeStore implements PancakeStore {
     /**
      * an order to be delivered goes through following steps:
      * incomplete: customer might modify the order
@@ -32,8 +32,9 @@ public final class InMemoryPancakeStore implements PancakeStore {
 
     @Override
     public Optional<Order> findOrder(UUID orderId) {
-        Objects.requireNonNull(orderId);
-        return Optional.ofNullable(orders.get(orderId));
+        return Optional.ofNullable(orders.get(
+                Objects.requireNonNullElse(orderId, UUID.randomUUID())
+                ));
     }
 
     /**
@@ -78,14 +79,13 @@ public final class InMemoryPancakeStore implements PancakeStore {
     }
 
     @Override
-    public void completeOrder(UUID orderId) {
-        move(orderId, Step.INCOMPLETE, Step.COMPLETED);
-
+    public Optional<Order> completeOrder(UUID orderId) {
+        return move(orderId, Step.INCOMPLETE, Step.COMPLETED);
     }
 
     @Override
-    public void preparedOrder(UUID orderId) {
-        move(orderId, Step.COMPLETED, Step.PREPARED);
+    public Optional<Order> preparedOrder(UUID orderId) {
+        return move(orderId, Step.COMPLETED, Step.PREPARED);
     }
 
 

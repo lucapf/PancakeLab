@@ -1,4 +1,4 @@
-package org.pancakelab;
+package org.pancakelab.service;
 
 import org.pancakelab.model.Order;
 import org.pancakelab.model.Pancake;
@@ -11,7 +11,7 @@ import java.util.UUID;
  * manage the persistence of the orders.
  * We may need to get rid by the In Memory management soon!
  */
-public interface PancakeStore {
+interface PancakeStore {
     Optional<Order> createOrder(int building, int room);
 
     Optional<Order> findOrder(UUID orderId);
@@ -25,11 +25,11 @@ public interface PancakeStore {
 
     Optional<Order> cancelOrder(UUID orderId);
 
-    void completeOrder(UUID orderId);
+    Optional<Order> completeOrder(UUID orderId);
 
     List<UUID> listCompletedOrders();
 
-    void preparedOrder(UUID orderId);
+    Optional<Order> preparedOrder(UUID orderId);
 
     List<UUID> listPreparedOrders();
 

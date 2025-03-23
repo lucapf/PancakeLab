@@ -1,4 +1,4 @@
-package org.pancakelab;
+package org.pancakelab.service;
 
 import org.pancakelab.model.Ingredient;
 import org.pancakelab.model.Order;

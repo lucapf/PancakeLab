@@ -34,10 +34,14 @@ public class PancakeServiceTest {
         order = optionalOrder.get();
         assertEquals(10, order.getBuilding());
         assertEquals(20, order.getRoom());
-
         // verify
-
         // tear down
+    }
+    @Test
+    @org.junit.jupiter.api.Order(11)
+    public void GivenInvalidAddress_WhenCreatingOrder_ThenOrderIsEmpty_Test(){
+        var invalidAddressOrder = pancakeService.createOrder(-1,0);
+        assertTrue(invalidAddressOrder.isEmpty());
     }
 
     @Test
@@ -64,6 +68,21 @@ public class PancakeServiceTest {
 
         // tear down
     }
+
+    @Test
+    @org.junit.jupiter.api.Order(11)
+    public void GivenWrongUUID_WhenViewOrder_ThenResultIsEmpty_Test(){
+        List<String> nonExistingOrder = pancakeService.viewOrder(UUID.randomUUID());
+        assertTrue(nonExistingOrder.isEmpty());
+    }
+
+    @Test
+    @org.junit.jupiter.api.Order(12)
+    public void GivenNullId_WhenViewOrder_ThenResultIsEmpty_Test(){
+        List<String> nullOrder = pancakeService.viewOrder(null);
+        assertTrue(nullOrder.isEmpty());
+    }
+
 
     @Test
     @org.junit.jupiter.api.Order(30)
@@ -160,8 +179,6 @@ public class PancakeServiceTest {
         order = newOrder.get();
         pancakeService.addPancakes(order.getId(), 2, DARK_CHOCOLATE);
         pancakeService.addPancakes(order.getId(), 2, DARK_CHOCOLATE, WHIPPED_CREAM, HAZELNUTS);
-//        pancakeService.addDarkChocolatePancake(order.getId(), 2);
-//        pancakeService.addDarkChocolateWhippedCreamHazelnutsPancake(order.getId(), 2);
 
         // exercise
         pancakeService.cancelOrder(order.getId());
@@ -180,9 +197,4 @@ public class PancakeServiceTest {
         // tear down
     }
 
-//    private void addPancakes() {
-//        pancakeService.addDarkChocolatePancake(order.getId(), 3);
-//        pancakeService.addMilkChocolatePancake(order.getId(), 3);
-//        pancakeService.addMilkChocolateHazelnutsPancake(order.getId(), 3);
-//    }
 }

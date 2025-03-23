@@ -1,6 +1,6 @@
 package org.pancakelab.model;
 
-import org.pancakelab.Utils;
+import org.pancakelab.service.Utils;
 
 import java.util.*;
 
@@ -90,11 +90,6 @@ public class Order {
 
         public Builder setListPancakes(List<Pancake> listPancakes) {
             this.pancakes = listPancakes;
-            return this;
-        }
-
-        public Builder addPancakes(List<Pancake> pancakesToBeAdded) {
-            this.pancakes = Utils.concat(this.pancakes, pancakesToBeAdded);
             return this;
         }
 

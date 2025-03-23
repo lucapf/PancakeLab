@@ -1,6 +1,6 @@
 package org.pancakelab.model;
 
-import org.pancakelab.Utils;
+import org.pancakelab.service.Utils;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,10 +13,6 @@ public class Pancake {
     private Pancake(Builder builder) {
         this.ingredients = builder.ingredients;
         this.name = builder.name;
-    }
-
-    public List<Ingredient> ingredients() {
-        return ingredients;
     }
 
     public String getName() {

@@ -3,7 +3,7 @@ package org.pancakelab.service;
 import org.pancakelab.model.Order;
 import org.pancakelab.model.Pancake;
 
-public class OrderLog {
+class OrderLog {
     private static final StringBuilder log = new StringBuilder();
 
     public static void logAddPancake(Order order, Pancake pancake) {
@@ -21,6 +21,11 @@ public class OrderLog {
                 .append("from order %s now containing %d pancakes, ".formatted(order.getId(), order.getPancakes().size()))
                 .append("for building %d, room %d.".formatted(order.getBuilding(), order.getRoom()));
     }
+    public static void logNextStep(Order o) {
+        log.append("%s order %s with %d pancakes ".formatted(o.getStep().getDescription(), o.getId(), o.getPancakes().size()))
+                .append("for building %d, room %d.".formatted(o.getBuilding(), o.getPancakes().size()));
+    }
+
 
     public static void logCancelOrder(Order o) {
         log.append("Cancelled order %s with %d pancakes ".formatted(o.getId(), o.getPancakes().size()))
