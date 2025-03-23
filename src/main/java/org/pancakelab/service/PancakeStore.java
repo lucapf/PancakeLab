@@ -1,8 +1,8 @@
 package org.pancakelab.service;
 
 import org.pancakelab.model.Order;
+import org.pancakelab.model.OrderStatus;
 import org.pancakelab.model.Pancake;
-import org.pancakelab.model.Step;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,17 +14,15 @@ import java.util.UUID;
 interface PancakeStore {
     Order createOrder(int building, int room);
 
-    Order findOrder(UUID orderId);
+    Order findOrderById(UUID orderId);
 
-    Order addPancake(UUID orderId, Pancake pancakesRecipe, int count);
+    Order addPancakes(UUID orderId,OrderStatus orderStatus , List<Pancake> pancakesRecipe);
 
-    Order removePancake(Order order, Pancake pancakesRecipe, int count);
+    Order removePancakes(Order order, List<Pancake> pancakesRecipe);
 
-    Order cancelOrder(UUID orderId);
+    Order deleteOrder(UUID orderId);
 
-    List<UUID> listCompletedOrders();
+    List<Order> findOrdersByStatus(OrderStatus orderStatus);
 
-    List<UUID> listPreparedOrders();
-
-    Order moveOrder(UUID orderId, Step currentStep, Step nextStep);
+    Order moveOrder(UUID orderId, OrderStatus currentOrderStatus, OrderStatus nextOrderStatus);
 }

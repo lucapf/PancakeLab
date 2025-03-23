@@ -18,7 +18,7 @@ public enum Ingredient {
         return priority;
     }
 
-    public String ingredient() {
+    public String ingredientName() {
         return ingredient;
     }
 }

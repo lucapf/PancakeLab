@@ -9,6 +9,9 @@ public class NullOrder implements Order {
     NullOrder(String description) {
         this.description = description;
     }
+    public static UUID getNullID(){
+       return UUID.fromString("00000000-0000-0000-0000-000000000000");
+    }
 
     @Override
     public List<Pancake> getPancakes() {
@@ -18,7 +21,7 @@ public class NullOrder implements Order {
     @Override
     public UUID getId() {
         // NullOrderIds have always the same UUID
-        return UUID.fromString("59b680da-7e26-4f97-ae28-6ae4e890315b");
+        return getNullID();
     }
 
     @Override
@@ -32,8 +35,8 @@ public class NullOrder implements Order {
     }
 
     @Override
-    public Step getStep() {
-        return Step.NONE;
+    public OrderStatus getStatus() {
+        return OrderStatus.NONE;
     }
 
     @Override
@@ -42,12 +45,13 @@ public class NullOrder implements Order {
     }
 
     @Override
+    public Order removePancakes(List<Pancake> pancakes) {
+        return this;
+    }
+
+    @Override
     public String getDescription() {
         return description;
     }
 
-    @Override
-    public Type getType() {
-        return Type.INVALID;
-    }
 }

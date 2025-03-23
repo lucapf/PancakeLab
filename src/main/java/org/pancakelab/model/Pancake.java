@@ -1,7 +1,7 @@
 package org.pancakelab.model;
 
-import org.pancakelab.service.Utils;
-
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,16 +40,22 @@ public class Pancake {
     }
 
     public static class Builder {
-        private final List<Ingredient> ingredients;
+        private List<Ingredient> ingredients;
         private final String name;
 
+        private List<Ingredient> removeDuplicatedAndSortIngredients(){
+            return new HashSet<>(ingredients).stream()
+                    .sorted(Comparator.comparingInt(Ingredient::index)).toList(); //use Set to remove duplicates
+        }
+
         public Builder(Ingredient... providedIngredients) {
-            var sortedIngredients = Utils.removeDuplicatedAndSort(List.of(providedIngredients));
-            this.ingredients = sortedIngredients.isEmpty() ? List.of(Ingredient.PLAIN) : sortedIngredients;
+            this.ingredients = List.of(providedIngredients);
             this.name = this.ingredients.stream().map(Ingredient::name).collect(Collectors.joining("_"));
         }
 
         public Pancake build() {
+            ingredients = ingredients.isEmpty() ? List.of(Ingredient.PLAIN) : ingredients;
+            ingredients = removeDuplicatedAndSortIngredients();
             return new Pancake(this);
         }
     }

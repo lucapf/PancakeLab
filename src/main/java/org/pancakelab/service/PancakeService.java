@@ -2,11 +2,12 @@ package org.pancakelab.service;
 
 import org.pancakelab.model.Ingredient;
 import org.pancakelab.model.Order;
+import org.pancakelab.model.OrderStatus;
 import org.pancakelab.model.Pancake;
-import org.pancakelab.model.Step;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 /**
  * Pancake expose all the PancakeLab APIs. Is a Singleton
@@ -29,50 +30,64 @@ public enum PancakeService {
 
     public synchronized void addPancakes(UUID orderId, int count, Ingredient... ingredients) {
         var pancake = new Pancake.Builder(ingredients).build();
-        var order = pancakeStore.addPancake(orderId, pancake, count);
+        var additionalPancakes =
+                IntStream.range(0, count).boxed().map(x -> pancake).toList();
+
+        var order = pancakeStore.addPancakes(orderId,OrderStatus.INCOMPLETE , additionalPancakes);
         OrderLog.logAddPancake(order, pancake);
     }
 
     public List<String> viewOrder(UUID orderId) {
-        return pancakeStore.findOrder(orderId).getPancakes().stream()
+        return pancakeStore.findOrderById(orderId).getPancakes().stream()
                 .map(Pancake::getName)
                 .toList();
     }
 
     public synchronized void removePancakes(Pancake pancake, UUID orderId, int count) {
-        var existingOrder = pancakeStore.findOrder(orderId);
-        var newOrder = pancakeStore.removePancake(existingOrder, pancake, count);
+        var existingOrder = pancakeStore.findOrderById(orderId);
+        var pancakesToRemove =
+                IntStream.range(0, count).boxed().map(x -> pancake).toList();
+        var newOrder = pancakeStore.removePancakes(existingOrder, pancakesToRemove);
         var removedItems = existingOrder.getPancakes().size() - newOrder.getPancakes().size();
         OrderLog.logRemovePancakes(newOrder, pancake.description(), removedItems);
     }
 
     public synchronized void cancelOrder(UUID orderId) {
-        var order = pancakeStore.cancelOrder(orderId);
+        var order = pancakeStore.deleteOrder(orderId);
         OrderLog.logCancelOrder(order);
     }
 
-    public synchronized void completeOrder(UUID orderId) {
-        var movedOrder = pancakeStore.moveOrder(orderId, Step.INCOMPLETE, Step.COMPLETED);
-        OrderLog.logNextStep(movedOrder);
-    }
 
-    public synchronized void prepareOrder(UUID orderId) {
-        var movedOrder = pancakeStore.moveOrder(orderId, Step.COMPLETED, Step.PREPARED);
-        OrderLog.logNextStep(movedOrder);
+
+    public List<UUID> listIncompleteOrders() {
+        return pancakeStore.findOrdersByStatus(OrderStatus.INCOMPLETE).stream().map(Order::getId).toList();
     }
 
     public List<UUID> listCompletedOrders() {
-        return pancakeStore.listCompletedOrders();
+        return pancakeStore.findOrdersByStatus(OrderStatus.COMPLETED).stream().map(Order::getId).toList();
     }
 
-
     public List<UUID> listPreparedOrders() {
-        return pancakeStore.listPreparedOrders();
+        return pancakeStore.findOrdersByStatus(OrderStatus.PREPARED).stream().map(Order::getId).toList();
     }
 
     public synchronized Order deliverOrder(UUID orderId) {
-        var orderWithPancakes = pancakeStore.moveOrder(orderId, Step.PREPARED, Step.DELIVERED);
+        var order = pancakeStore.findOrderById(orderId);
+        var orderWithPancakes = order.getStatus() == OrderStatus.PREPARED
+                ?pancakeStore.deleteOrder(orderId)
+                :new Order.Builder().setDescription("order id: %s status %s not found").build();
         OrderLog.logDeliverOrder(orderWithPancakes);
         return orderWithPancakes;
+    }
+    public synchronized Order completeOrder(UUID orderId) {
+        var movedOrder = pancakeStore.moveOrder(orderId, OrderStatus.INCOMPLETE, OrderStatus.COMPLETED);
+        OrderLog.logNextStep(movedOrder);
+        return movedOrder;
+    }
+
+    public synchronized Order prepareOrder(UUID orderId) {
+        var movedOrder = pancakeStore.moveOrder(orderId, OrderStatus.COMPLETED, OrderStatus.PREPARED);
+        OrderLog.logNextStep(movedOrder);
+        return movedOrder;
     }
 }

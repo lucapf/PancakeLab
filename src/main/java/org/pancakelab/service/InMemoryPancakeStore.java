@@ -1,39 +1,28 @@
 package org.pancakelab.service;
 
-import org.pancakelab.model.ConcreteOrder;
-import org.pancakelab.model.Order;
-import org.pancakelab.model.Pancake;
-import org.pancakelab.model.Step;
+import org.pancakelab.model.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.IntStream;
 
 /**
  * Store the order status in memory.
  * not designed to be extended.
  */
 final class InMemoryPancakeStore implements PancakeStore {
-    /**
-     * an order to be delivered goes through following steps:
-     * incomplete: customer might modify the order
-     * completed:  customer completed the order and goes to the chicken
-     * prepared: the order is ready to be shipped
-     * delivered: customer got the order
-     */
 
-    private static final Map<UUID, Order> orders = new ConcurrentHashMap<>();
+      private static final Map<UUID, Order> orders = new ConcurrentHashMap<>();
 
 
     @Override
     public Order createOrder(int building, int room) {
         var createdOrder = new ConcreteOrder.Builder(building, room).build();
-        orders.put(createdOrder.getId(), createdOrder);
+        putValue( createdOrder);
         return createdOrder;
     }
 
     @Override
-    public Order findOrder(UUID orderId) {
+    public Order findOrderById(UUID orderId) {
         var o = Optional.ofNullable(orders.get(
                 Objects.requireNonNullElse(orderId, UUID.randomUUID())
         ));
@@ -46,56 +35,57 @@ final class InMemoryPancakeStore implements PancakeStore {
      * add new pancakes to an existing order.
      * Only incomplete order are modifiable!
      *
-     * @param orderId  : the order id
-     * @param pancake: the Recipe to remove
-     * @param count:   items to remove
+     * @param orderId   : the order id
+     * @param pancakes: list of pancake to add
      */
     @Override
-    public Order addPancake(UUID orderId, Pancake pancake, int count) {
-        var existingOrder = findOrder(orderId);
-        var additionalPancakes =
-                IntStream.range(0, count).boxed().map(x -> pancake).toList();
-        var updatedOrder = existingOrder.addPancakes(additionalPancakes);
-        orders.put(orderId, updatedOrder);
+    public Order addPancakes(UUID orderId,OrderStatus orderStatus , List<Pancake> pancakes) {
+        var existingOrder = findOrderByIdAndStatus(orderId, orderStatus);
+        var updatedOrder = existingOrder.addPancakes(pancakes);
+        putValue(updatedOrder);
         return existingOrder;
     }
 
 
     @Override
-    public Order removePancake(Order order, Pancake pancake, int count) {
-        var updatedOrder = Utils.removeItem(order, pancake, count);
-        orders.put(order.getId(), updatedOrder);
+    public Order removePancakes(Order order, List<Pancake> pancakes) {
+        var updatedOrder = order.removePancakes(pancakes);
+        putValue(updatedOrder);
         return updatedOrder;
     }
 
     @Override
-    public Order cancelOrder(UUID orderId) {
-        var order = findOrder(orderId);
+    public Order deleteOrder(UUID orderId) {
+        var order = findOrderById(orderId);
         orders.remove(orderId);
         return order;
     }
 
 
     @Override
-    public List<UUID> listCompletedOrders() {
-        return filterByStatus(Step.COMPLETED).stream().map(Order::getId).toList();
+    public List<Order> findOrdersByStatus(OrderStatus orderStatus) {
+        return orders.values().stream().filter(o -> o.getStatus() == orderStatus).toList();
     }
-
 
     @Override
-    public List<UUID> listPreparedOrders() {
-        return filterByStatus(Step.PREPARED).stream().map(Order::getId).toList();
-    }
-
-
-    private List<Order> filterByStatus(Step step) {
-        return orders.values().stream().filter(o -> o.getStep() == step).toList();
-    }
-
-    public Order moveOrder(UUID orderId, Step currentStep, Step newStep) {
-        var o = findOrder(orderId);
-        var newOrder = new ConcreteOrder.Builder(o).setStep(newStep).build();
-        orders.put(orderId, newOrder);
+    public Order moveOrder(UUID orderId, OrderStatus currentOrderStatus, OrderStatus newOrderStatus) {
+        var existingOrder = findOrderByIdAndStatus(orderId, currentOrderStatus);
+        var newOrder = new Order.Builder(existingOrder).setStep(newOrderStatus).build();
+        putValue(newOrder);
         return newOrder;
     }
+
+    /**
+     * store concrete orders only
+     */
+    private void putValue(Order order){
+        if (order instanceof  ConcreteOrder)
+                orders.put(order.getId(), order);
+    }
+   private Order findOrderByIdAndStatus(UUID orderId, OrderStatus orderStatus) {
+       var o = findOrderById(orderId);
+       return o.getStatus() == orderStatus?o
+               : new Order.Builder().setDescription(
+               "order id: %s with status: %s not found".formatted(orderId, orderStatus)).build();
+   }
 }

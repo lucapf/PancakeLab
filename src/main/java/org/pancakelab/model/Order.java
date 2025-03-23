@@ -13,49 +13,57 @@ public interface Order {
 
     int getRoom();
 
-    Step getStep();
+    OrderStatus getStatus();
 
     Order addPancakes(List<Pancake> pancakes);
 
+    Order removePancakes(List<Pancake> pancakes);
+
     String getDescription();
 
-    Type getType();
 
-    enum Type {CONCRETE, INVALID}
 
     class Builder {
+        enum Type{
+            VALID, INVALID;
+        }
         UUID id;
         int building;
         int room;
-        Step step;
+        OrderStatus orderStatus;
         List<Pancake> pancakes;
         String description;
         Type type;
 
         public Builder() {
             this(0, 0);
+            type = Type.INVALID;
         }
 
         public Builder(Order order) {
             this(order.getBuilding(), order.getRoom());
             this.id = order.getId();
             this.building = order.getBuilding();
-            this.step = order.getStep();
+            this.orderStatus = order.getStatus();
             this.pancakes = order.getPancakes();
         }
-        private Type checkAddress(int building, int room){
-           return building <= 0 || room<=0?Type.INVALID:Type.CONCRETE;
-        }
+
         public Builder(int building, int room) {
-            this.type = checkAddress(building, room);
             this.id = UUID.randomUUID();
             this.building = building;
             this.room = room;
             this.pancakes = Collections.emptyList();
-            this.step = Step.INCOMPLETE;
-            this.description = type == Type.CONCRETE
-                                ?"building: %d room: %d".formatted(this.building, this.room)
-                                :"the address is not invalid";
+            this.orderStatus = OrderStatus.INCOMPLETE;
+            this.description = checkAddress();
+        }
+
+        private String checkAddress() {
+            if (building <= 0 || room <= 0){
+                this.type = Type.INVALID;
+                return "the address is not invalid";
+            }
+            this.type = Type.VALID;
+            return "building: %d room: %d".formatted(this.building, this.room);
         }
 
         public Builder setDescription(String description) {
@@ -63,8 +71,8 @@ public interface Order {
             return this;
         }
 
-        public Builder setStep(Step step) {
-            this.step = step;
+        public Builder setStep(OrderStatus orderStatus) {
+            this.orderStatus = orderStatus;
             return this;
         }
 
@@ -74,8 +82,7 @@ public interface Order {
         }
 
         public Order build() {
-            return this.building < 0 || this.room < 0
-                    ? new NullOrder("the address is not valid")
+            return type==Type.INVALID? new NullOrder("the address is not valid")
                     : new ConcreteOrder(this);
         }
     }

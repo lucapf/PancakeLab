@@ -1,0 +1,21 @@
+@startuml
+class PancakeService {
++ static final PancakeService : INSTANCE
++ PancakeStore : pancakeStore
+
+
+}
+
+PancakeService --* PancakeStore: use
+interface PancakeStore{
+  + Order createOrder(int building, int room);
+  + Order addPancakes(UUID orderId, List<Pancake> pancakesRecipe);
+  + Order removePancakes(Order order, List<Pancake> pancakesRecipe);
+  + Order deleteOrder(UUID orderId);
+  + List<Order> findOrdersByStep(Step step);
+  + Order moveOrder(UUID orderId, Step currentStep, Step nextStep);
+}
+class InMemoryPancakeStore{}
+
+PancakeStore <|.. InMemoryPancakeStore: implements
+@enduml

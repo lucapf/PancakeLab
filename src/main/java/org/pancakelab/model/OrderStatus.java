@@ -1,10 +1,10 @@
 package org.pancakelab.model;
 
-public enum Step {
+public enum OrderStatus {
     NONE("NULL STEP"), INCOMPLETE("created"), COMPLETED("completed"), PREPARED("prepared"), DELIVERED("delivered");
     private final String description;
 
-    Step(String description) {
+    OrderStatus(String description) {
         this.description = description;
     }
 

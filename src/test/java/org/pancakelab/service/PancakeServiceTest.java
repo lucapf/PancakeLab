@@ -4,6 +4,8 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.pancakelab.model.ConcreteOrder;
+import org.pancakelab.model.NullOrder;
 import org.pancakelab.model.Order;
 import org.pancakelab.model.Pancake;
 
@@ -20,8 +22,8 @@ public class PancakeServiceTest {
     private final static String DARK_CHOCOLATE_PANCAKE_DESCRIPTION = "DARK_CHOCOLATE";
     private final static String MILK_CHOCOLATE_PANCAKE_DESCRIPTION = "MILK_CHOCOLATE";
     private final static String MILK_CHOCOLATE_HAZELNUTS_PANCAKE_DESCRIPTION = "MILK_CHOCOLATE_HAZELNUTS";
-    PancakeService pancakeService = PancakeService.INSTANCE;
-    Order order;
+    private final PancakeService pancakeService = PancakeService.INSTANCE;
+    private Order order;
 
     @Test
     @org.junit.jupiter.api.Order(10)
@@ -30,7 +32,6 @@ public class PancakeServiceTest {
 
         // exercise
         order = pancakeService.createOrder(10, 20);
-        assertSame(Order.Type.CONCRETE, order.getType());
         assertEquals("building: 10 room: 20", order.getDescription());
         assertEquals(10, order.getBuilding());
         assertEquals(20, order.getRoom());
@@ -42,7 +43,7 @@ public class PancakeServiceTest {
     @org.junit.jupiter.api.Order(11)
     public void GivenInvalidAddress_WhenCreatingOrder_ThenOrderIsEmpty_Test() {
         var invalidAddressOrder = pancakeService.createOrder(-1, 0);
-        assertSame(Order.Type.INVALID, invalidAddressOrder.getType());
+        assertInstanceOf(NullOrder.class, invalidAddressOrder);
         assertEquals("the address is not valid", invalidAddressOrder.getDescription());
     }
 
@@ -120,8 +121,53 @@ public class PancakeServiceTest {
         // verify
         List<UUID> completedOrdersOrders = pancakeService.listCompletedOrders();
         assertTrue(completedOrdersOrders.contains(order.getId()));
-
         // tear down
+    }
+
+    @Test
+    @org.junit.jupiter.api.Order(41)
+    public void GivenANewOrder_WhenMovingBetweenStates_OnlyCorrectMovesTakeEffect_Test(){
+        // setup
+        var newOrder = pancakeService.createOrder(10, 10);
+        var orderId = newOrder.getId();
+
+        // perform
+        assertTrue(pancakeService.listIncompleteOrders().contains(orderId ));
+        assertFalse(pancakeService.listCompletedOrders().contains(orderId));
+
+        var prepareOrder = pancakeService.prepareOrder(orderId);
+        assertInstanceOf(NullOrder.class, prepareOrder);
+
+        var deliveredOrder = pancakeService.deliverOrder(orderId);
+        assertInstanceOf(NullOrder.class, deliveredOrder);
+
+        var completedOrders = pancakeService.completeOrder(orderId);
+        assertEquals(orderId, completedOrders.getId());
+    }
+
+    @Test
+    @org.junit.jupiter.api.Order(42)
+    public void GivenAnOrderStatusCompletedOrPrepared_WhenTryToChange_ItTakesNoEffect_Test(){
+        // setup
+        var newOrder = pancakeService.createOrder(10, 10);
+        var orderId = newOrder.getId();
+        pancakeService.addPancakes(orderId, 1, DARK_CHOCOLATE, HAZELNUTS);
+        pancakeService.addPancakes(orderId, 1, MILK_CHOCOLATE);
+        var configuredPancakes = List.of("DARK_CHOCOLATE_HAZELNUTS","MILK_CHOCOLATE");
+
+        // perform
+        assertEquals(2,pancakeService.viewOrder(orderId).size());
+        var completedOrder = pancakeService.completeOrder(orderId);
+        assertInstanceOf(ConcreteOrder.class, completedOrder);
+
+        pancakeService.addPancakes(orderId, 1, MILK_CHOCOLATE);
+        assertEquals(configuredPancakes, pancakeService.viewOrder(orderId));
+
+        pancakeService.prepareOrder(orderId);
+        pancakeService.addPancakes(orderId, 1, MILK_CHOCOLATE);
+        assertEquals(configuredPancakes, pancakeService.viewOrder(orderId));
+
+
     }
 
     @Test
@@ -131,16 +177,21 @@ public class PancakeServiceTest {
 
         // exercise
         pancakeService.prepareOrder(order.getId());
+        var nonExistingUUID = UUID.randomUUID();
 
         // verify
         List<UUID> completedOrders = pancakeService.listCompletedOrders();
         assertFalse(completedOrders.contains(order.getId()));
 
+        // completion for a non-existing order take no effect
+        pancakeService.completeOrder(nonExistingUUID);
+        assertTrue(pancakeService.viewOrder(nonExistingUUID).isEmpty());
+
         List<UUID> preparedOrders = pancakeService.listPreparedOrders();
         assertTrue(preparedOrders.contains(order.getId()));
-
         // tear down
     }
+
 
     @Test
     @org.junit.jupiter.api.Order(60)
@@ -159,11 +210,7 @@ public class PancakeServiceTest {
         assertFalse(preparedOrders.contains(order.getId()));
 
         List<String> ordersPancakes = pancakeService.viewOrder(order.getId());
-        assertSame(Order.Type.CONCRETE, deliveredOrder.getType());
-
-        assertEquals(List.of(DARK_CHOCOLATE_PANCAKE_DESCRIPTION,
-                MILK_CHOCOLATE_HAZELNUTS_PANCAKE_DESCRIPTION,
-                MILK_CHOCOLATE_HAZELNUTS_PANCAKE_DESCRIPTION), ordersPancakes);
+        assertEquals(List.of(), ordersPancakes);
         assertEquals(order.getId(), deliveredOrder.getId());
         var pancakeNames = deliveredOrder.getPancakes().stream().map(Pancake::getName).toList();
         assertEquals(pancakesToDeliver, pancakeNames);
@@ -177,7 +224,7 @@ public class PancakeServiceTest {
     public void GivenOrderExists_WhenCancellingOrder_ThenOrderAndPancakesRemoved_Test() {
         // setup
         var newOrder = pancakeService.createOrder(10, 20);
-        assertSame(Order.Type.CONCRETE, newOrder.getType());
+        assertFalse(newOrder instanceof  NullOrder);
         pancakeService.addPancakes(newOrder.getId(), 2, DARK_CHOCOLATE);
         pancakeService.addPancakes(newOrder.getId(), 2, DARK_CHOCOLATE, WHIPPED_CREAM, HAZELNUTS);
 
@@ -201,16 +248,18 @@ public class PancakeServiceTest {
     @Test
     @org.junit.jupiter.api.Order(71)
     public void GivenConcurrentChangesToOrder_ThenOrderMustBeConsistent_Test() {
-        var cycles = 100;
+        var cycles = 10000;
         var newOrder = pancakeService.createOrder(10, 10);
-
         try (var executors = Executors.newFixedThreadPool(5)) {
-            for (int i = 0; i < cycles; i++) {
-                executors.submit(() -> pancakeService.addPancakes(newOrder.getId(), 1, PLAIN));
+            for (int i = 1; i < cycles; i++) {
+                executors.submit(() -> {
+                    pancakeService.addPancakes(newOrder.getId(), 1, PLAIN);
+                    var pancake = new Pancake.Builder(PLAIN).build();
+                    pancakeService.removePancakes(pancake,newOrder.getId(), 1 );
+                } );
             }
             executors.shutdown();
         }
-        assertEquals(cycles, pancakeService.viewOrder(newOrder.getId()).size());
+        assertEquals(0, pancakeService.viewOrder(newOrder.getId()).size());
     }
-
 }
