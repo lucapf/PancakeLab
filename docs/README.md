@@ -17,6 +17,12 @@ We hope our Sensei enjoys the new PancakeLab application, designed to streamline
   - all objects are Immutable, an update will create a new instance of the modified object
   - The PancakeService is a singleton (via Enumerator pattern) and methods that are updating data are synchronized
 - our system, now, enforce the workflow our Sensei designed.
+- our system writes most important things in the standard output.
+
+> Note:
+> 
+>  Because the test id 71 (concurrency) while executing the PancakeServiceTest class, 
+> the system will generate tons of logs. Pls `@Disable` the test if annoying.
 
 ## The order workflow
 

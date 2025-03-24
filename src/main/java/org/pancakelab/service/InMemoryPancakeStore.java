@@ -16,7 +16,6 @@ final class InMemoryPancakeStore implements PancakeStore {
 
     private static final Map<UUID, Order> orders = new ConcurrentHashMap<>();
 
-
     @Override
     public Order createOrder(int building, int room) {
         var createdOrder = new ConcreteOrder.Builder(building, room).build();
@@ -51,7 +50,7 @@ final class InMemoryPancakeStore implements PancakeStore {
     public Order addPancakes(Order existingOrder, List<Pancake> pancakes) {
         var updatedOrder = existingOrder.addPancakes(pancakes);
         putValue(updatedOrder);
-        return existingOrder;
+        return updatedOrder;
     }
 
 

@@ -26,16 +26,19 @@ public enum PancakeService {
      * @return if address is  valid return the Order. Empty object otherwise
      */
     public synchronized Order createOrder(int building, int room) {
-        return pancakeStore.createOrder(building, room);
+        var order = pancakeStore.createOrder(building, room);
+        OrderLog.logCreateOrder(order);
+        return order;
     }
 
-    public synchronized void addPancakes(UUID orderId, int count, Ingredient... ingredients) {
+    public synchronized Order addPancakes(UUID orderId, int count, Ingredient... ingredients) {
         orderId = Optional.ofNullable(orderId).orElse(UUID.randomUUID());
         var pancake = new Pancake.Builder(ingredients).build();
         var additionalPancakes = IntStream.range(0, count).boxed().map(x -> pancake).toList();
         var existingOrder = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.INCOMPLETE);
         var order = pancakeStore.addPancakes(existingOrder, additionalPancakes);
         OrderLog.logAddPancake(order, pancake);
+        return order;
     }
 
     public List<String> viewOrder(UUID orderId) {
@@ -50,7 +53,7 @@ public enum PancakeService {
         var existingOrder = pancakeStore.findOrderById(orderId);
         var newOrder = pancakeStore.removePancakes(existingOrder, pancakesToRemove);
         var removedItems = existingOrder.getPancakes().size() - newOrder.getPancakes().size();
-        OrderLog.logRemovePancakes(newOrder, pancake.description(), removedItems);
+        OrderLog.logRemovePancakes(newOrder, removedItems);
     }
 
     public synchronized Order cancelOrder(UUID orderId) {
@@ -85,7 +88,7 @@ public enum PancakeService {
         orderId = Optional.ofNullable(orderId).orElse(UUID.randomUUID());
         var order = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.INCOMPLETE);
         var movedOrder = order.getPancakes().isEmpty()
-                ? Order.Builder.buildNull("cannot complete orders without pancakes!")
+                ? Order.Builder.buildNull("order id: %s cannot complete orders without pancakes!".formatted(orderId))
                 : pancakeStore.moveOrder(order, OrderStatus.COMPLETED);
         OrderLog.logNextStep(movedOrder);
         return movedOrder;

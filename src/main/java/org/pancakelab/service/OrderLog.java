@@ -1,40 +1,51 @@
 package org.pancakelab.service;
 
+import org.pancakelab.model.ConcreteOrder;
 import org.pancakelab.model.Order;
 import org.pancakelab.model.Pancake;
 
 class OrderLog {
-    private static final StringBuilder log = new StringBuilder();
 
+   private synchronized static void writeMessage(Order order , String actionName,String message) {
+       message = order instanceof  ConcreteOrder
+               ?message:"cannot perform %s - reason: %s".formatted(actionName,order.getDescription());
+               System.out.println(message);
+   }
     public static void logAddPancake(Order order, Pancake pancake) {
-
-        log.append("Added pancake with description '%s' ".formatted(pancake.description()))
-                .append("to order %s containing %d pancakes, ".formatted(order.getId(),
-                        order.getPancakes().size()))
-                .append("for building %d, room %d.".formatted(order.getBuilding(),
-                        order.getRoom()));
+        writeMessage(order,"add Pancacke",
+            "Add pancake: %s to order id %s - %s containing %d pancakes ."
+       .formatted(pancake.description(),order.getId(), order.getDescription(),order.getPancakes().size() ));
     }
 
-    public static void logRemovePancakes(Order order, String description, int count) {
-
-        log.append("Removed %d pancake(s) with description '%s' ".formatted(count, description))
-                .append("from order %s now containing %d pancakes, ".formatted(order.getId(), order.getPancakes().size()))
-                .append("for building %d, room %d.".formatted(order.getBuilding(), order.getRoom()));
+    public static void logRemovePancakes(Order order, int count) {
+        writeMessage(order,"remove Pancake",
+            "Removed %d pancake(s)  from order %s now containing %d pancakes, %s."
+                        .formatted(count, order.getId(), order.getPancakes().size(),order.getDescription()));
     }
 
-    public static void logNextStep(Order o) {
-        log.append("%s order %s with %d pancakes ".formatted(o.getStatus().getDescription(), o.getId(), o.getPancakes().size()))
-                .append("for building %d, room %d.".formatted(o.getBuilding(), o.getPancakes().size()));
+    public static void logNextStep(Order order) {
+        writeMessage(order,"move next Order Status",
+                "order %s with %d pancakes %s moved to %s"
+                .formatted(order.getId(), order.getPancakes().size(),order.getDescription(),order.getStatus()));
     }
 
 
-    public static void logCancelOrder(Order o) {
-        log.append("Cancelled order %s with %d pancakes ".formatted(o.getId(), o.getPancakes().size()))
-                .append("for building %d, room %d.".formatted(o.getBuilding(), o.getPancakes().size()));
+    public static void logCancelOrder(Order order) {
+        writeMessage(order,"Cancel Order",
+                "Cancelled order %s with %d pancakes %s."
+                .formatted(order.getId(), order.getPancakes().size(),order.getDescription()));
     }
 
     public static void logDeliverOrder(Order order) {
-        log.append("Order %s with %d pancakes ".formatted(order.getId(), order.getPancakes().size()))
-                .append("for building %d, room %d out for delivery.".formatted(order.getBuilding(), order.getRoom()));
+        writeMessage(order,"Deliver order",
+                "Order %s with %d pancakes %s out for delivery."
+                        .formatted(order.getId(), order.getPancakes().size(),order.getDescription()));
+    }
+
+    public static void logCreateOrder(Order order) {
+        writeMessage(order,"Create Order",
+                "Order %s %s created."
+                .formatted(order.getId(), order.getDescription()));
+
     }
 }
