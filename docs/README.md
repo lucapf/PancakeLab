@@ -2,9 +2,9 @@
 
 ## Summary
 
-Hope our Sensei will enjoy our new PancakeLab application to run our Pancake Dojo!
+We hope our Sensei enjoys the new PancakeLab application, designed to streamline operations at the Pancake Dojo!
 
-Major changes:
+### Major changes
 
 - Customers are now able to choose the ingredients they want among the ones our Sensei approve! our new system will
   - remove duplicates, if you specify Hazelnuts, Hazelnuts, Hazelnuts means you want a pancake with Hazelnuts 
@@ -12,7 +12,7 @@ Major changes:
   - at least one topping is required
 - the persistence management (PancakeStore) has been decoupled by the business logic so,
   when our Dojo will be world-wide, we will be able to replace the InMemory management with a database or our choice
-- the InMemory store has been replaced with a Map to find quicker orders by key
+- the InMemory store uses a Map to find quickly orders by Id 
 - Concurrency has been addressed in three different ways:
   - all objects are Immutable, an update will create a new instance of the modified object
   - The PancakeService is a singleton (via Enumerator pattern) and methods that are updating data are synchronized
@@ -22,9 +22,9 @@ Major changes:
 
 ![Order workflow](OrderStatus.svg)
 
-  1. INCOMPLETE: Disciple create order , required fields a valid building and room numbers (both positive)
+  1. INCOMPLETE: Disciple create order. He/she must specify valid building and room numbers (both positive)
   2. COMPLETED: once all Pancakes have been added and the Disciple set the order as completed. 
-     The order goes in the chicken and cannot be changed anymore
+     The order goes in the kitchen and cannot be changed anymore. Order without pancakes will not be accepted!
   3. PREPARED: the order is ready for delivery
   4. DELIVERED: The order is delivered to the customer
 

@@ -1,7 +1,7 @@
 package org.pancakelab.model;
 
 public enum OrderStatus {
-    NONE("NULL STEP"), INCOMPLETE("created"), COMPLETED("completed"), PREPARED("prepared"), DELIVERED("delivered");
+    INCOMPLETE("created"), COMPLETED("completed"), PREPARED("prepared");
     private final String description;
 
     OrderStatus(String description) {

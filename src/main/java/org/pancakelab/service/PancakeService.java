@@ -21,7 +21,7 @@ public enum PancakeService {
      * @param room:     positive number indicates the room
      * @return if address is  valid return the Order. Empty object otherwise
      */
-    public Order createOrder(int building, int room) {
+    public synchronized  Order createOrder(int building, int room) {
         return pancakeStore.createOrder(building, room);
     }
 

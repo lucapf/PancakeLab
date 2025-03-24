@@ -53,7 +53,6 @@ public class Pancake {
         }
 
         public Pancake build() {
-            ingredients = ingredients.isEmpty() ? List.of(Ingredient.WHIPPED_CREAM) : ingredients;
             ingredients = removeDuplicatedAndSortIngredients();
             name = ingredients.stream().map(Ingredient::name).collect(Collectors.joining("_"));
             return new Pancake(this);

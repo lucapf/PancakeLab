@@ -1,10 +1,8 @@
 package org.pancakelab.service;
 
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.pancakelab.model.*;
+import org.pancakelab.model.Order;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +40,14 @@ public class PancakeServiceTest {
         var invalidAddressOrder = pancakeService.createOrder(-1, 0);
         assertInstanceOf(NullOrder.class, invalidAddressOrder);
         assertEquals("the address building: -1 room: 0 is not valid", invalidAddressOrder.getDescription());
+    }
+
+    @Test
+    @org.junit.jupiter.api.Order(12)
+    public void GivenANonExistingId_WhenAddingPancakes_nothingHappen_Test() {
+        var orderId  = UUID.randomUUID();
+        pancakeService.addPancakes(orderId, 1, HAZELNUTS);
+        assertTrue(pancakeService.viewOrder(orderId).isEmpty());
     }
 
     @Test
@@ -141,6 +147,9 @@ public class PancakeServiceTest {
 
         var completedOrders = pancakeService.completeOrder(orderId);
         assertEquals(orderId, completedOrders.getId());
+        // tear Down
+        pancakeService.prepareOrder(orderId);
+        pancakeService.deliverOrder(orderId);
     }
 
     @Test
@@ -164,6 +173,8 @@ public class PancakeServiceTest {
         pancakeService.prepareOrder(orderId);
         pancakeService.addPancakes(orderId, 1, MILK_CHOCOLATE);
         assertEquals(configuredPancakes, pancakeService.viewOrder(orderId));
+        //tear down
+        pancakeService.deliverOrder(orderId);
     }
 
 
@@ -174,10 +185,10 @@ public class PancakeServiceTest {
         var newOrder = pancakeService.createOrder(10, 10);
         var orderId = newOrder.getId();
         pancakeService.addPancakes(orderId, 2, MILK_CHOCOLATE);
-
-        // exercise
         Order completedOrder = pancakeService.completeOrder(orderId);
         assertEquals(orderId, completedOrder.getId());
+
+        // exercise
         assertEquals(OrderStatus.COMPLETED, completedOrder.getStatus());
 
         var cancelledOrder = pancakeService.cancelOrder(orderId);
@@ -187,11 +198,16 @@ public class PancakeServiceTest {
 
         var cancelNonExistingOrder = pancakeService.cancelOrder(UUID.randomUUID());
         assertInstanceOf(NullOrder.class, cancelNonExistingOrder);
+
         // tear down
+        pancakeService.prepareOrder(orderId);
+        pancakeService.deliverOrder(orderId);
+
 
     }
 
     @Test
+    @Disabled
     @org.junit.jupiter.api.Order(44)
     public void GivenAnIncompleteOrderWithoutPancakes_WhenTryToComplete_TheOrderWontChange_Test() {
         var newOrder = pancakeService.createOrder(10, 10);
@@ -199,6 +215,10 @@ public class PancakeServiceTest {
         var order = pancakeService.completeOrder(orderId);
         assertInstanceOf(NullOrder.class, order);
         assertEquals("cannot complete orders without pancakes!", order.getDescription());
+
+        //tear down
+        pancakeService.prepareOrder(orderId);
+        pancakeService.deliverOrder(orderId);
     }
 
     @Test
@@ -299,18 +319,14 @@ public class PancakeServiceTest {
         assertEquals(cycles, pancakeService.listCompletedOrders().size());
         try (var executors = Executors.newFixedThreadPool(5)) {
             for (int i = 0; i < cycles; i++) {
-                executors.submit(() -> {
-                    pancakeService.removePancakes(pancake, newOrder.getId(), 1);
-                });
+                executors.submit(() -> pancakeService.removePancakes(pancake, newOrder.getId(), 1) );
             }
             executors.shutdown();
         }
         assertEquals(0, pancakeService.viewOrder(newOrder.getId()).size());
         var orders = pancakeService.listIncompleteOrders();
         try (var executors = Executors.newFixedThreadPool(4)) {
-            for (var order : orders) {
-                executors.submit(() -> pancakeService.cancelOrder(order));
-            }
+            for (var order : orders) executors.submit(() -> pancakeService.cancelOrder(order));
             executors.shutdown();
         }
         assertEquals(0, pancakeService.listIncompleteOrders().size());

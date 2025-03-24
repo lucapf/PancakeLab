@@ -37,7 +37,7 @@ public class NullOrder implements Order {
 
     @Override
     public OrderStatus getStatus() {
-        return OrderStatus.NONE;
+        return OrderStatus.INCOMPLETE;
     }
 
     @Override

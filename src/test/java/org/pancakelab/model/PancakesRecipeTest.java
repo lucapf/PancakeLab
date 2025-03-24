@@ -20,7 +20,7 @@ public class PancakesRecipeTest {
         assertEquals("HAZELNUTS", duplicatedIngredients.getName());
 
         var plainPancake = new Pancake.Builder().build();
-        assertEquals("PLAIN", plainPancake.getName());
+        assertEquals("", plainPancake.getName());
 
     }
 }
