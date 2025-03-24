@@ -13,7 +13,7 @@ We hope our Sensei enjoys the new PancakeLab application, designed to streamline
 - the persistence management (PancakeStore) has been decoupled by the business logic so,
   when our Dojo will be world-wide, we will be able to replace the InMemory management with a database or our choice
 - the InMemory store uses a Map to find quickly orders by Id 
-- Concurrency has been addressed in three different ways:
+- Concurrency has been addressed:
   - all objects are Immutable, an update will create a new instance of the modified object
   - The PancakeService is a singleton (via Enumerator pattern) and methods that are updating data are synchronized
 - our system, now, enforce the workflow our Sensei designed.
@@ -59,4 +59,4 @@ The following diagram shown the Pancake Service and Store data structure
 The interface `PancakeStore` decouple the persistence layer (`InMemoryPancakeStore`) 
 by the business logic implemented in the service.
 
-`PancakeService` is a Singleton with synchronized method to enforce concurrency 
+`PancakeService` is a Singleton with synchronized method to enforce concurrency
