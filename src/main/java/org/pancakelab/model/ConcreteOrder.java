@@ -57,8 +57,8 @@ public class ConcreteOrder implements Order {
     @Override
     public Order addPancakes(List<Pancake> pancakes) {
         return new Order.Builder(this).setListPancakes(
-                        Stream.concat(this.pancakes.stream(), pancakes.stream()).toList()
-                ).build();
+                Stream.concat(this.pancakes.stream(), pancakes.stream()).toList()
+        ).build();
     }
 
     @Override

@@ -9,7 +9,7 @@ by the Sensei's Chef and Delivery service to prepare and deliver the pancakes.
 1. In the first orderStatus the Disciple creates an Order and specifies the building and the room number.
 2. After that the Disciple can add pancakes from the menu.
 3. The Disciple can choose to complete or cancel the Order, if cancelled the Order is removed from the database.
-4. If the Disciple completes the Order t[Step.java](src/main/java/org/pancakelab/model/Step.java)he Chef can prepare the pancakes.
+4. If the Disciple completes the Order the Chef can prepare the pancakes.
 5. After the Chef prepares the Order it can be delivered.
 6. After the Order is sent for delivery it is removed from the database.
 
@@ -22,7 +22,7 @@ He hacked the system to add mustard with milk-chocolate and whipped cream pancak
 Some errors were also reported, disciples reported that pancakes were missing, delivery reported that they were
 sent to a building that does not exist, etc.
 
-## Assignment[Step.java](src/main/java/org/pancakelab/model/Step.java)
+## Assignment
 The Sensei proposed that the application should be refactored. You, his best Disciple, have been tasked
 to save the pancakes production in the Dojo.
 

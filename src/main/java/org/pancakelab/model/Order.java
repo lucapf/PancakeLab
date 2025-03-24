@@ -29,6 +29,7 @@ public interface Order {
         List<Pancake> pancakes;
         String description;
         Type type;
+
         public Builder(Order order) {
             this(order.getBuilding(), order.getRoom());
             this.id = order.getId();

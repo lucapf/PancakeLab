@@ -1,6 +1,9 @@
 package org.pancakelab.service;
 
-import org.pancakelab.model.*;
+import org.pancakelab.model.Ingredient;
+import org.pancakelab.model.Order;
+import org.pancakelab.model.OrderStatus;
+import org.pancakelab.model.Pancake;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +25,7 @@ public enum PancakeService {
      * @param room:     positive number indicates the room
      * @return if address is  valid return the Order. Empty object otherwise
      */
-    public synchronized  Order createOrder(int building, int room) {
+    public synchronized Order createOrder(int building, int room) {
         return pancakeStore.createOrder(building, room);
     }
 

@@ -45,7 +45,7 @@ public class PancakeServiceTest {
     @Test
     @org.junit.jupiter.api.Order(12)
     public void GivenANonExistingId_WhenAddingPancakes_nothingHappen_Test() {
-        var orderId  = UUID.randomUUID();
+        var orderId = UUID.randomUUID();
         pancakeService.addPancakes(orderId, 1, HAZELNUTS);
         assertTrue(pancakeService.viewOrder(orderId).isEmpty());
     }
@@ -219,10 +219,10 @@ public class PancakeServiceTest {
         assertInstanceOf(NullOrder.class, order);
         assertEquals("cannot complete orders without pancakes!", order.getDescription());
         var nonExistingOrder = pancakeService.completeOrder(UUID.randomUUID());
-        assertInstanceOf(NullOrder.class,nonExistingOrder );
+        assertInstanceOf(NullOrder.class, nonExistingOrder);
 
         var nullOrder = pancakeService.completeOrder(null);
-        assertInstanceOf(NullOrder.class,nullOrder );
+        assertInstanceOf(NullOrder.class, nullOrder);
 
         //tear down
         pancakeService.prepareOrder(orderId);
@@ -327,7 +327,7 @@ public class PancakeServiceTest {
         assertEquals(cycles, pancakeService.listCompletedOrders().size());
         try (var executors = Executors.newFixedThreadPool(5)) {
             for (int i = 0; i < cycles; i++) {
-                executors.submit(() -> pancakeService.removePancakes(pancake, newOrder.getId(), 1) );
+                executors.submit(() -> pancakeService.removePancakes(pancake, newOrder.getId(), 1));
             }
             executors.shutdown();
         }
