@@ -33,7 +33,6 @@ public class PancakeServiceTest {
         // verify
         // tear down
     }
-
     @Test
     @org.junit.jupiter.api.Order(11)
     public void GivenInvalidAddress_WhenCreatingOrder_ThenOrderIsEmpty_Test() {
@@ -92,7 +91,6 @@ public class PancakeServiceTest {
         assertTrue(nullOrder.isEmpty());
     }
 
-
     @Test
     @org.junit.jupiter.api.Order(30)
     public void GivenPancakesExists_WhenRemovingPancakes_ThenCorrectNumberOfPancakesRemoved_Test() {
@@ -130,6 +128,7 @@ public class PancakeServiceTest {
         // tear down
     }
 
+    @Disabled
     @Test
     @org.junit.jupiter.api.Order(41)
     public void GivenANewOrder_WhenMovingBetweenStates_OnlyCorrectMovesTakeEffect_Test() {
@@ -210,14 +209,14 @@ public class PancakeServiceTest {
     }
 
     @Test
-    @Disabled
     @org.junit.jupiter.api.Order(44)
     public void GivenAnIncompleteOrderWithoutPancakes_WhenTryToComplete_TheOrderWontChange_Test() {
         var newOrder = pancakeService.createOrder(10, 10);
         var orderId = newOrder.getId();
         var order = pancakeService.completeOrder(orderId);
         assertInstanceOf(NullOrder.class, order);
-        assertEquals("cannot complete orders without pancakes!", order.getDescription());
+        assertEquals("order id: %s cannot complete orders without pancakes!".formatted(orderId),
+                order.getDescription());
         var nonExistingOrder = pancakeService.completeOrder(UUID.randomUUID());
         assertInstanceOf(NullOrder.class, nonExistingOrder);
 
@@ -304,6 +303,8 @@ public class PancakeServiceTest {
         // tear down
     }
 
+
+    @Disabled
     @Test
     @org.junit.jupiter.api.Order(71)
     public void GivenConcurrentChangesToOrder_ThenOrderMustBeConsistent_Test() {

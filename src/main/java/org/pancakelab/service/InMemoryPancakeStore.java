@@ -51,7 +51,7 @@ final class InMemoryPancakeStore implements PancakeStore {
     public Order addPancakes(Order existingOrder, List<Pancake> pancakes) {
         var updatedOrder = existingOrder.addPancakes(pancakes);
         putValue(updatedOrder);
-        return existingOrder;
+        return updatedOrder;
     }
 
 

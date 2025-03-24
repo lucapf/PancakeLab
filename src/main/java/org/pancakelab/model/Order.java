@@ -64,7 +64,7 @@ public interface Order {
             return this;
         }
 
-        public Builder setListPancakes(List<Pancake> listPancakes) {
+        public Builder setPancakes(List<Pancake> listPancakes) {
             this.pancakes = listPancakes;
             return this;
         }

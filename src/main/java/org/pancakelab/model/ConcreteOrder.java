@@ -56,7 +56,7 @@ public class ConcreteOrder implements Order {
 
     @Override
     public Order addPancakes(List<Pancake> pancakes) {
-        return new Order.Builder(this).setListPancakes(
+        return new Order.Builder(this).setPancakes(
                 Stream.concat(this.pancakes.stream(), pancakes.stream()).toList()
         ).build();
     }
@@ -65,7 +65,7 @@ public class ConcreteOrder implements Order {
     public Order removePancakes(List<Pancake> pancakes) {
         var existingPancakes = new ArrayList<>(this.pancakes);
         pancakes.forEach(existingPancakes::remove);
-        return new Order.Builder(this).setListPancakes(existingPancakes).build();
+        return new Order.Builder(this).setPancakes(existingPancakes).build();
     }
 
     @Override
