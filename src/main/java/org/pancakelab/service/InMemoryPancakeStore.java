@@ -16,7 +16,6 @@ final class InMemoryPancakeStore implements PancakeStore {
 
     private static final Map<UUID, Order> orders = new ConcurrentHashMap<>();
 
-
     @Override
     public Order createOrder(int building, int room) {
         var createdOrder = new ConcreteOrder.Builder(building, room).build();

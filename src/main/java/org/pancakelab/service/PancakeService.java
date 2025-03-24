@@ -31,13 +31,14 @@ public enum PancakeService {
         return order;
     }
 
-    public synchronized void addPancakes(UUID orderId, int count, Ingredient... ingredients) {
+    public synchronized Order addPancakes(UUID orderId, int count, Ingredient... ingredients) {
         orderId = Optional.ofNullable(orderId).orElse(UUID.randomUUID());
         var pancake = new Pancake.Builder(ingredients).build();
         var additionalPancakes = IntStream.range(0, count).boxed().map(x -> pancake).toList();
         var existingOrder = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.INCOMPLETE);
         var order = pancakeStore.addPancakes(existingOrder, additionalPancakes);
         OrderLog.logAddPancake(order, pancake);
+        return order;
     }
 
     public List<String> viewOrder(UUID orderId) {
