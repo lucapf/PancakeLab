@@ -22,7 +22,7 @@ We hope our Sensei enjoys the new PancakeLab application, designed to streamline
 
 ![Order workflow](OrderStatus.svg)
 
-  1. INCOMPLETE: Disciple create order. He/she must specify valid building and room numbers (both positive)
+  1. INCOMPLETE: Disciple create order. He/She must specify valid building and room numbers (both positive)
   2. COMPLETED: once all Pancakes have been added and the Disciple set the order as completed. 
      The order goes in the kitchen and cannot be changed anymore. Order without pancakes will not be accepted!
   3. PREPARED: the order is ready for delivery
