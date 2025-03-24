@@ -6,7 +6,7 @@ The software solution can be used to order pancakes to the disciples' rooms and 
 by the Sensei's Chef and Delivery service to prepare and deliver the pancakes.
 
 ### Use case
-1. In the first step the Disciple creates an Order and specifies the building and the room number.
+1. In the first orderStatus the Disciple creates an Order and specifies the building and the room number.
 2. After that the Disciple can add pancakes from the menu.
 3. The Disciple can choose to complete or cancel the Order, if cancelled the Order is removed from the database.
 4. If the Disciple completes the Order the Chef can prepare the pancakes.

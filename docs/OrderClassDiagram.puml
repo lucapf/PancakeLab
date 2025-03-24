@@ -1,0 +1,29 @@
+@startuml
+interface Order{
+    + int: getBuilding
+    + int: getRoom
+    + Pancake: getPancakes
+    + String: getDescription
+    + class Builder()
+}
+
+class Pancake{
+    + Ingredient: ingredients
+}
+Pancake -left-* Ingredient
+enum Ingredient{
+    DARK_CHOCOLATE
+    MILK_CHOCOLATE
+    WHIPPED_CREAM
+    HAZELNUTS
+}
+class ConcreteOrder{
+}
+
+class NullOrder{
+}
+Order -left-* Pancake
+Order <|-- ConcreteOrder
+Order <|--NullOrder
+
+@enduml
