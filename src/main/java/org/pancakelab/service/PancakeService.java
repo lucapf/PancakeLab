@@ -3,6 +3,7 @@ package org.pancakelab.service;
 import org.pancakelab.model.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
@@ -26,6 +27,7 @@ public enum PancakeService {
     }
 
     public synchronized void addPancakes(UUID orderId, int count, Ingredient... ingredients) {
+        orderId = Optional.ofNullable(orderId).orElse(UUID.randomUUID());
         var pancake = new Pancake.Builder(ingredients).build();
         var additionalPancakes = IntStream.range(0, count).boxed().map(x -> pancake).toList();
         var existingOrder = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.INCOMPLETE);
@@ -34,6 +36,7 @@ public enum PancakeService {
     }
 
     public List<String> viewOrder(UUID orderId) {
+        orderId = Optional.ofNullable(orderId).orElse(UUID.randomUUID());
         return pancakeStore.findOrderById(orderId).getPancakes().stream()
                 .map(Pancake::getName)
                 .toList();
@@ -48,6 +51,7 @@ public enum PancakeService {
     }
 
     public synchronized Order cancelOrder(UUID orderId) {
+        orderId = Optional.ofNullable(orderId).orElse(UUID.randomUUID());
         var order = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.INCOMPLETE);
         pancakeStore.deleteOrder(order);
         OrderLog.logCancelOrder(order);
@@ -67,6 +71,7 @@ public enum PancakeService {
     }
 
     public synchronized Order deliverOrder(UUID orderId) {
+        orderId = Optional.ofNullable(orderId).orElse(UUID.randomUUID());
         var order = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.PREPARED);
         pancakeStore.deleteOrder(order);
         OrderLog.logDeliverOrder(order);
@@ -74,8 +79,9 @@ public enum PancakeService {
     }
 
     public synchronized Order completeOrder(UUID orderId) {
+        orderId = Optional.ofNullable(orderId).orElse(UUID.randomUUID());
         var order = pancakeStore.findOrderByIdAndStatus(orderId, OrderStatus.INCOMPLETE);
-        var movedOrder = order instanceof ConcreteOrder && order.getPancakes().isEmpty()
+        var movedOrder = order.getPancakes().isEmpty()
                 ? Order.Builder.buildNull("cannot complete orders without pancakes!")
                 : pancakeStore.moveOrder(order, OrderStatus.COMPLETED);
         OrderLog.logNextStep(movedOrder);

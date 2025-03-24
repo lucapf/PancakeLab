@@ -80,6 +80,9 @@ public class PancakeServiceTest {
     public void GivenWrongUUID_WhenViewOrder_ThenResultIsEmpty_Test() {
         List<String> nonExistingOrder = pancakeService.viewOrder(UUID.randomUUID());
         assertTrue(nonExistingOrder.isEmpty());
+
+        List<String> nullOrder = pancakeService.viewOrder(null);
+        assertTrue(nullOrder.isEmpty());
     }
 
     @Test
@@ -215,6 +218,11 @@ public class PancakeServiceTest {
         var order = pancakeService.completeOrder(orderId);
         assertInstanceOf(NullOrder.class, order);
         assertEquals("cannot complete orders without pancakes!", order.getDescription());
+        var nonExistingOrder = pancakeService.completeOrder(UUID.randomUUID());
+        assertInstanceOf(NullOrder.class,nonExistingOrder );
+
+        var nullOrder = pancakeService.completeOrder(null);
+        assertInstanceOf(NullOrder.class,nullOrder );
 
         //tear down
         pancakeService.prepareOrder(orderId);

@@ -7,16 +7,16 @@ We hope our Sensei enjoys the new PancakeLab application, designed to streamline
 ### Major changes
 
 - Customers are now able to choose the ingredients they want among the ones our Sensei approve! our new system will
-  - remove duplicates, if you specify Hazelnuts, Hazelnuts, Hazelnuts means you want a pancake with Hazelnuts 
-  - sort the ingredients following our Sensei's recommendation
-  - at least one topping is required
+  - remove duplicates: if you specify Hazelnuts, Hazelnuts, Hazelnuts means you want a pancake with Hazelnuts 
+  - generate a consistent name for your Pancake
+  - at least one topping is required for the order to be closed
 - the persistence management (PancakeStore) has been decoupled by the business logic so,
   when our Dojo will be world-wide, we will be able to replace the InMemory management with a database or our choice
 - the InMemory store uses a Map to find quickly orders by Id 
 - Concurrency has been addressed in three different ways:
   - all objects are Immutable, an update will create a new instance of the modified object
   - The PancakeService is a singleton (via Enumerator pattern) and methods that are updating data are synchronized
-- our system, now, enforce the workflow our Sensei designed
+- our system, now, enforce the workflow our Sensei designed.
 
 ## The order workflow
 
